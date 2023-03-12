@@ -37,7 +37,7 @@ Clear-Host
 Write-Host $translatedStringResourceSb.ToString()
 
 New-Item -Name "Translations" -ItemType Directory -ErrorAction Ignore
-New-Item -Path "Translations/strings $(Get-Date -Format 'yyyy-MM-dd hh-mm-ss').txt" -Value $translatedStringResourceSb.ToString()
+New-Item -Path "Translations/strings $(Get-Date -Format 'yyyy-MM-dd hh;mm;ss').txt" -Value $translatedStringResourceSb.ToString()
 
 while ($true)
 {

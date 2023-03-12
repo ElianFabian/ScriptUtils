@@ -26,27 +26,32 @@ $DecodeMap =
 
 $StringResourcePattern = '<string name="(.+)">(.+)<\/string>'
 
-function FromStringResContentToRegularString([string] $InputObject)
+
+function Convert-String
 {
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [string] $InputObject,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateSet('Encode', 'Decode')]
+        [string] $Mode
+    )
+
     $decodedString = $InputObject
 
     foreach ($pair in $DecodeMap.GetEnumerator())
     {
-        $decodedString = $decodedString.Replace($pair.Key, $pair.Value)
+        $decodedString = switch ($Mode)
+        {
+            Encode { $decodedString.Replace($pair.Value, $pair.Key) }
+            Decode { $decodedString.Replace($pair.Key, $pair.Value) }
+        }
     }
     return $decodedString
 }
 
-function FromRegularStringToStringResContent([string] $InputObject)
-{
-    $encodedString = $InputObject
-
-    foreach ($pair in $DecodeMap.GetEnumerator())
-    {
-        $encodedString = $encodedString.Replace($pair.Value, $pair.Key)
-    }
-    return $encodedString
-}
 
 $ClipboardContent = (Get-Clipboard -Raw)
 
@@ -64,7 +69,7 @@ return Invoke-ItemTranslation `
     -TargetLanguage $TargetLanguage `
     -OnGetItem { $name, $content = $args
 
-        $decodedContent = FromStringResContentToRegularString $content
+        $decodedContent = Convert-String $content -Mode Decode
 
         [pscustomobject]@{
             Name = $name
@@ -80,7 +85,7 @@ return Invoke-ItemTranslation `
 
         Show-TranslationProgress -TotalItemsCount $TotalItemsCount
 
-        $encodedTranslatedContent = FromRegularStringToStringResContent $translatedContent
+        $encodedTranslatedContent = Convert-String $translatedContent -Mode Encode
 
         [pscustomobject]@{
             Name = $item.Name
