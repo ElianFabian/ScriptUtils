@@ -11,17 +11,6 @@ $NewLine = [System.Environment]::NewLine
 
 $AppResourceFolder = "$AndroidStudioProjectPath/$Module/src/main/res"
 
-$LanguageToCode =
-@{
-    'Catalan'    = 'ca'
-    'German'     = 'de'
-    'Spanish'    = 'es'
-    'French'     = 'fr'
-    'Italian'    = 'it'
-    'Portuguese' = 'pt'
-    'Swedish'    = 'sv'
-}
-
 
 
 Write-Host "Reading from clipboard...`n" -ForegroundColor Green
@@ -45,27 +34,25 @@ if ($null -eq $translationsPerLanguage)
 
 $displayInfoSb = [System.Text.StringBuilder]::new()
 
-foreach ($languageAndTranslations in $translationsPerLanguage.PSObject.Properties)
+foreach ($data in $translationsPerLanguage)
 {
-    $currentStringResourceFilePath = "$AppResourceFolder/values-$($LanguageToCode[$languageAndTranslations.Name])/strings.xml"
+    $currentStringResourceFilePath = "$AppResourceFolder/values-$($data.LanguageCode)/strings.xml"
 
     $stringResourceFileContent = Get-Content -Path $currentStringResourceFilePath -Encoding utf8 -Raw
 
     $translatedStringResourceSb = [System.Text.StringBuilder]::new()
 
-    $listOfTranslationByName = $languageAndTranslations.Value
-
     $lineSeparator = ""
-    foreach ($data in $listOfTranslationByName)
+    foreach ($stringResourceData in $data.Translations)
     {
-        $newStringResource = "<string name=""$($data.Name)"">$($data.TranslatedContent)</string>"
+        $newStringResource = "<string name=""$($stringResourceData.Name)"">$($stringResourceData.TranslatedContent)</string>"
 
         $translatedStringResourceSb.Append("$lineSeparator    $newStringResource") > $null
 
         $lineSeparator = $NewLine
     }
 
-    $displayInfoSb.Append("`n<!-- $($languageAndTranslations.Name) | Modified file: $currentStringResourceFilePath -->$NewLine") > $null
+    $displayInfoSb.Append("`n<!-- $($data.LanguageName) | Modified file: $currentStringResourceFilePath -->$NewLine") > $null
     $displayInfoSb.Append("$translatedStringResourceSb$NewLine") > $null
 
     $translatedStringResourceSb.Append("$NewLine</resources>") > $null

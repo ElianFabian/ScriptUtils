@@ -88,7 +88,7 @@ function Show-TranslationProgress([int] $TotalItemsCount)
 
     Write-Progress `
         -Activity "Time: $currentTimeSinceStartInSeconds | Time left: $timeLeftInSeconds | Velocity: $(('{0:0}' -f $translationsPerSecond))" `
-        -Status "$($percentComplete)%:" `
+        -Status "$($percentComplete)%" `
         -PercentComplete $percentComplete
 }
 
@@ -114,28 +114,36 @@ function Invoke-ItemTranslation
         [scriptblock] $OnTranslateItem
     )
 
-    $itemsPerTargetLanguage = [PSCustomObject]@{}
+    $itemsPerTargetLanguage = New-Object object[] $TargetLanguage.Count
 
     $parsedItems = Get-ItemFromStringWithRegex `
         -InputObject $InputObject `
         -ItemPattern $ItemPattern `
         -OnGetItem $OnGetItem
 
+    $languageIndex = 0
     foreach ($targetLanguageItem in $TargetLanguage)
     {
-        $translatedListOfItems = New-Object object[] $parsedItems.Count
+        $listOfTranslatedItems = New-Object object[] $parsedItems.Count
 
         $parsedItemIndex = 0
         foreach ($item in $parsedItems)
         {
             $tranlatedItem = $OnTranslateItem.Invoke($item, $SourceLanguage, $targetLanguageItem)[0]
 
-            $translatedListOfItems[$parsedItemIndex] = $tranlatedItem
+            $listOfTranslatedItems[$parsedItemIndex] = $tranlatedItem
 
             $parsedItemIndex++
         }
 
-        $itemsPerTargetLanguage | Add-Member -MemberType NoteProperty -Name $targetLanguageItem -Value $translatedListOfItems
+        $itemsPerTargetLanguage[$languageIndex] =
+        @{
+            LanguageName  = $targetLanguageItem
+            LanguageCode  = $GoogleTranslate_LanguageToCode[$targetLanguageItem]
+            Translations = $listOfTranslatedItems
+        }
+
+        $languageIndex++
     }
 
     return $itemsPerTargetLanguage

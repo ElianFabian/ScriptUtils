@@ -4,12 +4,12 @@
 
 $global:languagesCsv = ConvertFrom-Csv -InputObject ( Get-Content "$PSScriptRoot/Languages.csv" -Raw )
 
-$languageToCode = @{}
-$codeToLanguage = @{}
+$GoogleTranslate_LanguageToCode = @{}
+$GoogleTranslate_CodeToLanguage = @{}
 foreach($row in $global:languagesCsv)
 {
-    $languageToCode[$row.Language] = $row.Code
-    $codeToLanguage[$row.Code] = $row.Language
+    $GoogleTranslate_LanguageToCode[$row.Language] = $row.Code
+    $GoogleTranslate_CodeToLanguage[$row.Code] = $row.Language
 }
 
 class Language : System.Management.Automation.IValidateSetValuesGenerator
@@ -89,7 +89,7 @@ function Invoke-GoogleTranslate(
     $result = switch ($ReturnType)
     {
         LanguageDetection { $data.src }
-        LanguageDetectionAsEnglishWord { $codeToLanguage[$data.src] }
+        LanguageDetectionAsEnglishWord { $GoogleTranslate_CodeToLanguage[$data.src] }
         Translation { $data.sentences | Select-Object -ExpandProperty trans | Join-String }
         Alternative
         {
@@ -176,13 +176,13 @@ function TryConvertLanguageToCode([string] $SourceLanguage, [string] $TargetLang
 {
     $languageCodes = @($SourceLanguage, $TargetLanguage)
 
-    if ($languageToCode.ContainsKey($SourceLanguage))
+    if ($GoogleTranslate_LanguageToCode.ContainsKey($SourceLanguage))
     {
-        $languageCodes[0] = $languageToCode[$SourceLanguage]
+        $languageCodes[0] = $GoogleTranslate_LanguageToCode[$SourceLanguage]
     }
-    if ($languageToCode.ContainsKey($TargetLanguage))
+    if ($GoogleTranslate_LanguageToCode.ContainsKey($TargetLanguage))
     {
-        $languageCodes[1] = $languageToCode[$TargetLanguage]
+        $languageCodes[1] = $GoogleTranslate_LanguageToCode[$TargetLanguage]
     }
 
     return $languageCodes
@@ -212,3 +212,4 @@ $ListReturnTypeThatTheTargetLanguageIsRequired = @('Translation', 'Alternative',
 
 
 Export-ModuleMember -Function *-*
+Export-ModuleMember -Variable GoogleTranslate_CodeToLanguage, GoogleTranslate_LanguageToCode

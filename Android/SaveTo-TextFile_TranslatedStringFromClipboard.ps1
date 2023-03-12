@@ -19,15 +19,15 @@ if ($null -eq $translationsPerLanguage)
 
 $translatedStringResourceSb = [System.Text.StringBuilder]::new()
 
-foreach ($translationsInfo in $translationsPerLanguage.PSObject.Properties)
+foreach ($data in $translationsPerLanguage)
 {
-    $translatedStringResourceSb.Append("<!-- $($translationsInfo.Name) -->`n") > $null
+    $translatedStringResourceSb.Append("<!-- $($data.LanguageName) -->`n") > $null
 
-    $listOfTranslationByName = $translationsInfo.Value
+    $listOfTranslationByName = $data.Translations
 
-    foreach ($info in $listOfTranslationByName)
+    foreach ($stringResourceData in $listOfTranslationByName)
     {
-        $translatedStringResourceSb.Append("<string name=""$($info.Name)"">$($info.TranslatedContent)</string>`n") > $null
+        $translatedStringResourceSb.Append("<string name=""$($stringResourceData.Name)"">$($stringResourceData.TranslatedContent)</string>`n") > $null
     }
 
     $translatedStringResourceSb.Append("`n") > $null
