@@ -5,26 +5,29 @@ Import-Module -Name @(
 
 
 
-$SourceLanguage = 'English'
+$Params =
+@{
+    InputObject = (Get-Clipboard -Raw)
 
-$TargetLanguage =
-@(
-    'Catalan',
-    'German',
-    'Spanish',
-    'French',
-    'Italian',
-    'Portuguese',
-    'Swedish'
-)
+    SourceLanguage = 'English'
+    TargetLanguage =
+    @(
+        'Catalan',
+        'German',
+        'Spanish',
+        'French',
+        'Italian',
+        'Portuguese',
+        'Swedish'
+    )
+    ItemPattern = '<string name="(.+)">(.+)<\/string>'
+}
 
 $DecodeMap = 
 @{
     "\'" = "'"
     "\n" = [System.Environment]::NewLine
 }
-
-$StringResourcePattern = '<string name="(.+)">(.+)<\/string>'
 
 
 function Convert-String
@@ -43,30 +46,26 @@ function Convert-String
 
     foreach ($pair in $DecodeMap.GetEnumerator())
     {
+        $encodedValue = $pair.Key
+        $decodedValue = $pair.Value
+
         $decodedString = switch ($Mode)
         {
-            Encode { $decodedString.Replace($pair.Value, $pair.Key) }
-            Decode { $decodedString.Replace($pair.Key, $pair.Value) }
+            Encode { $decodedString.Replace($decodedValue, $encodedValue) }
+            Decode { $decodedString.Replace($encodedValue, $decodedValue) }
         }
     }
     return $decodedString
 }
 
 
-$ClipboardContent = (Get-Clipboard -Raw)
-
-
-$ItemsPerLanguageCount = Get-ItemFromStringWithRegex -InputObject $ClipboardContent -ItemPattern $StringResourcePattern -Count
-$TotalItemsCount = $TargetLanguage.Count * $ItemsPerLanguageCount
+$ItemsPerLanguageCount = Get-ItemFromStringWithRegex -InputObject $Params.InputObject -ItemPattern $Params.ItemPattern -Count
+$TotalItemsCount = $Params.TargetLanguage.Count * $ItemsPerLanguageCount
 
 
 if ($TotalItemsCount -eq 0) { return $null }
 
-return Invoke-ItemTranslation `
-    -InputObject $ClipboardContent `
-    -ItemPattern $StringResourcePattern `
-    -SourceLanguage $SourceLanguage `
-    -TargetLanguage $TargetLanguage `
+return Invoke-ItemTranslation @Params `
     -OnGetItem { $name, $content = $args
 
         $decodedContent = Convert-String $content -Mode Decode
