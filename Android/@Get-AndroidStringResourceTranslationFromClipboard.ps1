@@ -1,7 +1,4 @@
-Import-Module -Name @(
-        "$PSScriptRoot/../Modules/GenericTranslation/GenericTranslation.psm1",
-        "$PSScriptRoot/../Modules/GenericTranslation/Modules/PSGoogleTranslate/PSGoogleTranslate.psm1"
-    ) `
+Import-Module -Name "$PSScriptRoot/../Modules/GenericTranslation"
 
 
 
@@ -77,7 +74,7 @@ return Invoke-ItemTranslation @Params `
     } `
     -OnTranslateItem { $item, $source, $target = $args
 
-        $translatedContent = Invoke-GoogleTranslate `
+        $translatedContent = Invoke-StringTranslation `
             -InputObject $item.Content `
             -SourceLanguage $source `
             -TargetLanguage $target

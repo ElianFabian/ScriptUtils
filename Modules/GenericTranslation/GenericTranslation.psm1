@@ -1,3 +1,45 @@
+Import-Module -Name @(
+        "$PSScriptRoot/../PSGoogleTranslate",
+        "$PSScriptRoot/../PSMyMemory"
+    )
+
+
+$global:allLanguages = Invoke-MyMemory -AvailableLanguages
+
+$LanguageToCode = @{}
+foreach ($row in $global:allLanguages)
+{
+    $LanguageToCode[$row.Language] = $row.LanguageCode
+}
+
+
+function Invoke-StringTranslation
+{
+    param
+    (
+        [string] $InputObject,
+        [string] $SourceLanguage,
+        [string] $TargetLanguage
+    )
+
+    # The Google Translate API stop working propertly
+    # $response = Invoke-GoogleTranslate `
+    #     -InputObject $item.Content `
+    #     -SourceLanguage $SourceLanguage `
+    #     -TargetLanguage $TargetLanguage
+
+    $response = Invoke-MyMemory `
+        -InputObject $item.Content `
+        -SourceLanguage $SourceLanguage `
+        -TargetLanguage $TargetLanguage
+
+
+    $translation = $response.Translation
+   
+
+    return $translation.Trim()
+}
+
 <#
     .SYNOPSIS
     Given a string returns an array of every item using a pattern to convert it into another string with items.
@@ -87,7 +129,7 @@ function Show-TranslationProgress([int] $TotalItemsCount)
     $currentTimeSinceStartInSeconds = ([timespan]::FromSeconds($currentTimeSinceStart) -f '')
 
     Write-Progress `
-        -Activity "Time: $currentTimeSinceStartInSeconds | Time left: $timeLeftInSeconds | Velocity: $(('{0:0}' -f $translationsPerSecond))" `
+        -Activity "Time: $currentTimeSinceStartInSeconds | Time left: $timeLeftInSeconds | Velocity: $('{0:0}' -f $translationsPerSecond)" `
         -Status "$($percentComplete)%" `
         -PercentComplete $percentComplete
 }
@@ -138,8 +180,8 @@ function Invoke-ItemTranslation
 
         $itemsPerTargetLanguage[$languageIndex] =
         @{
-            LanguageName  = $targetLanguageItem
-            LanguageCode  = $GoogleTranslate_LanguageToCode[$targetLanguageItem]
+            LanguageName = $targetLanguageItem
+            LanguageCode = $LanguageToCode[$targetLanguageItem]
             Translations = $listOfTranslatedItems
         }
 
