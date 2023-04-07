@@ -47,7 +47,7 @@ function Invoke-StringTranslation
     A string of items that matches a certain pattern.
     .PARAMETER ItemPattern
     The pattern to match each item of the given InputObject. 
-    .PARAMETER OnCreateItem
+    .PARAMETER OnGetItem
     An script block which $args contains all the groups defined in $ItemPattern and returns an item as string.
     .EXAMPLE
     Get-ItemFromStringWithRegex `
