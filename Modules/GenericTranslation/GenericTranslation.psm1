@@ -108,10 +108,41 @@ function Get-ItemFromStringWithRegex
     return $arrayOfItems
 }
 
+function Convert-String
+{
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [string] $InputObject,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateSet('Encode', 'Decode')]
+        [string] $Mode,
+
+        [Parameter(Mandatory=$true)]
+        [hashtable] $DecodeMap
+    )
+
+    $decodedString = $InputObject
+
+    foreach ($pair in $DecodeMap.GetEnumerator())
+    {
+        $encodedValue = $pair.Key
+        $decodedValue = $pair.Value
+
+        $decodedString = switch ($Mode)
+        {
+            Encode { $decodedString.Replace($decodedValue, $encodedValue) }
+            Decode { $decodedString.Replace($encodedValue, $decodedValue) }
+        }
+    }
+    return $decodedString
+}
+
 $global:CurrentTranslatedItemsCount = 0
 $global:StartTimeInUnixTimeSeconds = $null
 
-function Show-TranslationProgress([int] $TotalItemsCount)
+function ShowTranslationProgress([int] $TotalItemCount)
 {
     if ($null -eq $StartTimeInUnixTimeSeconds)
     {
@@ -120,11 +151,11 @@ function Show-TranslationProgress([int] $TotalItemsCount)
 
     $global:CurrentTranslatedItemsCount++
 
-    [double] $currentTimeSinceStart = (([System.DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) - $global:StartTimeInUnixTimeSeconds)
+    [double] $currentTimeSinceStart = ([System.DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - $global:StartTimeInUnixTimeSeconds)
     [double] $translationsPerSecond = $global:CurrentTranslatedItemsCount / $currentTimeSinceStart
-    [int]    $timeLeft              = ($TotalItemsCount - $global:CurrentTranslatedItemsCount) / $translationsPerSecond
+    [int]    $timeLeft              = ($TotalItemCount - $global:CurrentTranslatedItemsCount) / $translationsPerSecond
 
-    $percentComplete                = [math]::Round($global:CurrentTranslatedItemsCount / $TotalItemsCount * 100)
+    $percentComplete                = [math]::Round($global:CurrentTranslatedItemsCount / $TotalItemCount * 100)
     $timeLeftInSeconds              = ([timespan]::FromSeconds($timeLeft) -f '')
     $currentTimeSinceStartInSeconds = ([timespan]::FromSeconds($currentTimeSinceStart) -f '')
 
@@ -163,6 +194,13 @@ function Invoke-ItemTranslation
         -ItemPattern $ItemPattern `
         -OnGetItem $OnGetItem
 
+    if ($parsedItems.Count -eq 0)
+    {
+        return $null
+    }
+
+    $totalItemCountForAllTargetLanguages = $parsedItems.Count * $TargetLanguage.Count
+
     $languageIndex = 0
     foreach ($targetLanguageItem in $TargetLanguage)
     {
@@ -172,6 +210,8 @@ function Invoke-ItemTranslation
         foreach ($item in $parsedItems)
         {
             $tranlatedItem = $OnTranslateItem.Invoke($item, $SourceLanguage, $targetLanguageItem)[0]
+
+            ShowTranslationProgress -TotalItemCount $totalItemCountForAllTargetLanguages
 
             $listOfTranslatedItems[$parsedItemIndex] = $tranlatedItem
 

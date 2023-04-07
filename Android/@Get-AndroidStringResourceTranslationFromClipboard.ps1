@@ -5,7 +5,7 @@ Import-Module -Name "$PSScriptRoot/../Modules/GenericTranslation"
 $Params =
 @{
     InputObject = (Get-Clipboard -Raw)
-
+    
     SourceLanguage = 'English'
     TargetLanguage =
     @(
@@ -19,7 +19,7 @@ $Params =
     )
     ItemPattern = '<string name="(.+)">(.+)<\/string>'
 }
-
+    
 $DecodeMap = 
 @{
     "\'" = "'"
@@ -27,45 +27,10 @@ $DecodeMap =
 }
 
 
-function Convert-String
-{
-    param
-    (
-        [Parameter(Mandatory=$true)]
-        [string] $InputObject,
-
-        [Parameter(Mandatory=$true)]
-        [ValidateSet('Encode', 'Decode')]
-        [string] $Mode
-    )
-
-    $decodedString = $InputObject
-
-    foreach ($pair in $DecodeMap.GetEnumerator())
-    {
-        $encodedValue = $pair.Key
-        $decodedValue = $pair.Value
-
-        $decodedString = switch ($Mode)
-        {
-            Encode { $decodedString.Replace($decodedValue, $encodedValue) }
-            Decode { $decodedString.Replace($encodedValue, $decodedValue) }
-        }
-    }
-    return $decodedString
-}
-
-
-$ItemsPerLanguageCount = Get-ItemFromStringWithRegex -InputObject $Params.InputObject -ItemPattern $Params.ItemPattern -Count
-$TotalItemsCount = $Params.TargetLanguage.Count * $ItemsPerLanguageCount
-
-
-if ($TotalItemsCount -eq 0) { return $null }
-
 return Invoke-ItemTranslation @Params `
     -OnGetItem { $name, $content = $args
 
-        $decodedContent = Convert-String $content -Mode Decode
+        $decodedContent = Convert-String $content -Mode Decode -DecodeMap $DecodeMap
 
         [pscustomobject]@{
             Name = $name
@@ -79,9 +44,7 @@ return Invoke-ItemTranslation @Params `
             -SourceLanguage $source `
             -TargetLanguage $target
 
-        Show-TranslationProgress -TotalItemsCount $TotalItemsCount
-
-        $encodedTranslatedContent = Convert-String $translatedContent -Mode Encode
+        $encodedTranslatedContent = Convert-String $translatedContent -Mode Encode -DecodeMap $DecodeMap
 
         [pscustomobject]@{
             Name = $item.Name
