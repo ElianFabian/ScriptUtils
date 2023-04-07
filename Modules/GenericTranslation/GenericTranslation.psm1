@@ -1,6 +1,6 @@
 Import-Module -Name @(
-        "$PSScriptRoot/../PSGoogleTranslate",
-        "$PSScriptRoot/../PSMyMemory"
+        "$PSScriptRoot/../PSMyMemory",
+        "$PSScriptRoot/../PSDeepl"
     )
 
 
@@ -24,20 +24,28 @@ function Invoke-StringTranslation
 
     # The Google Translate API stop working propertly
     # $response = Invoke-GoogleTranslate `
-    #     -InputObject $item.Content `
+    #     -InputObject $InputObject `
     #     -SourceLanguage $SourceLanguage `
     #     -TargetLanguage $TargetLanguage
+    #
+    # return $response.Translation.Trim()
+
+    if ($TargetLanguage -ne 'Catalan')
+    {
+        $translation = Invoke-Deepl `
+            -InputObject $InputObject `
+            -SourceLanguage $SourceLanguage `
+            -TargetLanguage $TargetLanguage
+
+        return $translation.Trim()
+    }
 
     $response = Invoke-MyMemory `
-        -InputObject $item.Content `
+        -InputObject $InputObject `
         -SourceLanguage $SourceLanguage `
         -TargetLanguage $TargetLanguage
 
-
-    $translation = $response.Translation
-   
-
-    return $translation.Trim()
+    return $response.Translation.Trim()
 }
 
 <#

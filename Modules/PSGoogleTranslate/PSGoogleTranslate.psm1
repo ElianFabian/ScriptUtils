@@ -1,22 +1,22 @@
-$global:languagesCsv = ConvertFrom-Csv -InputObject (Get-Content "$PSScriptRoot/Languages.csv" -Raw)
+$script:languagesCsv = ConvertFrom-Csv -InputObject (Get-Content "$PSScriptRoot/Languages.csv" -Raw)
 
 $LanguageToCode = @{}
 $CodeToLanguage = @{}
 
-foreach ($row in $global:languagesCsv)
+foreach ($row in $script:languagesCsv)
 {
     $LanguageToCode[$row.Language] = $row.Code
     $CodeToLanguage[$row.Code] = $row.Language
 }
 
-$global:pairOfSourceLanguageAndCode = $global:languagesCsv | ForEach-Object { $_.Language, $_.Code }
-$global:pairOfTargetLanguageAndCode = $global:languagesCsv | Where-Object { $_.Code -ine 'auto' } | ForEach-Object { $_.Language, $_.Code } 
+$script:pairOfSourceLanguageAndCode = $script:languagesCsv | ForEach-Object { $_.Language, $_.Code }
+$script:pairOfTargetLanguageAndCode = $script:languagesCsv | Where-Object { $_.Code -ine 'auto' } | ForEach-Object { $_.Language, $_.Code } 
 
 class SourceLanguage : System.Management.Automation.IValidateSetValuesGenerator
 {
     [String[]] GetValidValues()
     {
-        return $global:pairOfSourceLanguageAndCode
+        return $script:pairOfSourceLanguageAndCode
     }
 }
 
@@ -24,7 +24,7 @@ class TargetLanguage : System.Management.Automation.IValidateSetValuesGenerator
 {
     [String[]] GetValidValues()
     {
-        return $global:pairOfTargetLanguageAndCode
+        return $script:pairOfTargetLanguageAndCode
     }
 }
 
@@ -87,7 +87,7 @@ function Invoke-GoogleTranslate
 
     if ($AvailableLanguages)
     {
-        return $global:languagesCsv
+        return $script:languagesCsv
     }
 
     if ($ReturnType -in $ListOfSingleWordReturnType -and ($InputObject.Trim().Contains(' ') -or $InputObject.Trim().Contains("`n")))
