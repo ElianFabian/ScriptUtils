@@ -78,18 +78,10 @@ function Get-ItemFromStringWithRegex
         [string] $ItemPattern,
 
         [Parameter(Mandatory=$true, ParameterSetName='Normal')]
-        [scriptblock] $OnGetItem,
-
-        [Parameter(Mandatory=$true, ParameterSetName='Count')]
-        [switch] $Count
+        [scriptblock] $OnGetItem
     )
 
     $allMatches = $InputObject | Select-String -Pattern $ItemPattern -AllMatches | Select-Object -ExpandProperty Matches
-
-    if ($Count)
-    {
-        return $allMatches.Count
-    }
 
     $arrayOfItems = New-Object object[] $allMatches.Count
 
