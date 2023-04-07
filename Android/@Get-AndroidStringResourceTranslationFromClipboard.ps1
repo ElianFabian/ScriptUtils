@@ -19,7 +19,7 @@ $Params =
     )
     ItemPattern = '<string name="(.+)">(.+)<\/string>'
 }
-    
+
 $DecodeMap = 
 @{
     "\'" = "'"
