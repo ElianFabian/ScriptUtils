@@ -65,22 +65,22 @@ function Invoke-StringTranslation
 #>
 function Get-ItemFromStringWithRegex
 {
-    [OutputType([object[]], ParameterSetName='A')]
-    [OutputType([int], ParameterSetName='B')]
+    [OutputType([object[]], ParameterSetName='Normal')]
+    [OutputType([int], ParameterSetName='Count')]
     param
     (
-        [Parameter(Mandatory=$true, ParameterSetName='A')]
-        [Parameter(Mandatory=$true, ParameterSetName='B')]
+        [Parameter(Mandatory=$true, ParameterSetName='Normal')]
+        [Parameter(Mandatory=$true, ParameterSetName='Count')]
         [string] $InputObject,
 
-        [Parameter(Mandatory=$true, ParameterSetName='A')]
-        [Parameter(Mandatory=$true, ParameterSetName='B')]
+        [Parameter(Mandatory=$true, ParameterSetName='Normal')]
+        [Parameter(Mandatory=$true, ParameterSetName='Count')]
         [string] $ItemPattern,
 
-        [Parameter(Mandatory=$true, ParameterSetName='A')]
+        [Parameter(Mandatory=$true, ParameterSetName='Normal')]
         [scriptblock] $OnGetItem,
 
-        [Parameter(Mandatory=$true, ParameterSetName='B')]
+        [Parameter(Mandatory=$true, ParameterSetName='Count')]
         [switch] $Count
     )
 
