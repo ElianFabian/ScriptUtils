@@ -26,6 +26,7 @@ if ($null -eq $translationsPerLanguage)
     Write-Host "Your clipboard content:`n" -ForegroundColor Green
     Write-Host (Get-Clipboard -Raw)
 
+    # Remain console open
     while ($true)
     {
         Read-Host
@@ -66,6 +67,7 @@ Clear-Host
 Write-Host $displayInfoSb.ToString().Replace("    ", "")
 
 
+# Remain console open
 while ($true)
 {
     Read-Host

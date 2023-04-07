@@ -11,6 +11,7 @@ if ($null -eq $translationsPerLanguage)
     Write-Host "Your clipboard content:`n" -ForegroundColor Green
     Write-Host (Get-Clipboard -Raw)
 
+    # Remain console open
     while ($true)
     {
         Read-Host
@@ -39,6 +40,7 @@ Write-Host $translatedStringResourceSb.ToString()
 New-Item -Name "Translations" -ItemType Directory -ErrorAction Ignore
 New-Item -Path "Translations/strings $(Get-Date -Format 'yyyy-MM-dd hh;mm;ss').txt" -Value $translatedStringResourceSb.ToString()
 
+# Remain console open
 while ($true)
 {
     Read-Host
