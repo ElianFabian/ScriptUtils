@@ -4,6 +4,7 @@ Import-Module -Name @(
     )
 
 
+
 $global:allLanguages = Invoke-MyMemory -AvailableLanguages
 
 $LanguageToCode = @{}
@@ -37,7 +38,10 @@ function Invoke-StringTranslation
             -SourceLanguage $SourceLanguage `
             -TargetLanguage $TargetLanguage
 
-        return $translation.Trim()
+        if ($translation)
+        {
+            return $translation.Trim()
+        }
     }
 
     $response = Invoke-MyMemory `
@@ -45,7 +49,49 @@ function Invoke-StringTranslation
         -SourceLanguage $SourceLanguage `
         -TargetLanguage $TargetLanguage
 
+    if ($response.Translation)
+    {
+        $deeplLink           = GenerateDeeplLink @PSBoundParameters
+        $googleTranslateLink = GenerateGoogleTranslateLink @PSBoundParameters
+
+        return "`n    Translation limit exceeded, try these alternatives:`n`n    $deeplLink`n    $googleTranslateLink`n    "
+    }
+
     return $response.Translation.Trim()
+}
+
+function GenerateGoogleTranslateLink
+{
+    param
+    (
+        [string] $InputObject,
+        [string] $SourceLanguage,
+        [string] $TargetLanguage
+    )
+
+    $sourceLanguageCode = $LanguageToCode[$SourceLanguage]
+    $targetLanguageCode = $LanguageToCode[$TargetLanguage]
+
+    $encodedQuery = [uri]::EscapeDataString($InputObject)
+
+    return "https://translate.google.es/?sl=$sourceLanguageCode&tl=$targetLanguageCode&text=$encodedQuery"
+}
+
+function GenerateDeeplLink
+{
+    param
+    (
+        [string] $InputObject,
+        [string] $SourceLanguage,
+        [string] $TargetLanguage
+    )
+
+    $sourceLanguageCode = $LanguageToCode[$SourceLanguage]
+    $targetLanguageCode = $LanguageToCode[$TargetLanguage]
+
+    $encodedQuery = [uri]::EscapeDataString($InputObject)
+
+    return "https://www.deepl.com/es/translator#$sourceLanguageCode/$targetLanguageCode/$encodedQuery"
 }
 
 <#

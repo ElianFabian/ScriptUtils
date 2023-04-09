@@ -47,6 +47,8 @@ class TargetLanguage : System.Management.Automation.IValidateSetValuesGenerator
 }
 
 
+$DeeplApiKey = '3329b827-c3f9-79a3-1d77-6d7f1694e42c:fx'
+
 
 <#
     .PARAMETER InputObject
@@ -103,7 +105,7 @@ function Invoke-Deepl
     $sourceLanguageCode, $targetLanguageCode = TryConvertLanguageToCode $SourceLanguage $TargetLanguage
 
     $response = Invoke-DeeplTranslateText `
-        -ApiKey $env:Deepl_ApiKey `
+        -ApiKey $DeeplApiKey `
         -TextToTranslate $InputObject `
         -SourceLanguage $sourceLanguageCode `
         -TargetLanguage $targetLanguageCode
