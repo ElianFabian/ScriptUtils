@@ -49,7 +49,7 @@ function Invoke-StringTranslation
         -SourceLanguage $SourceLanguage `
         -TargetLanguage $TargetLanguage
 
-    if ($response.Translation)
+    if (-not $response.Translation)
     {
         $deeplLink           = GenerateDeeplLink @PSBoundParameters
         $googleTranslateLink = GenerateGoogleTranslateLink @PSBoundParameters
