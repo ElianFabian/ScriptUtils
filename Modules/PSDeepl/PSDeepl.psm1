@@ -1,14 +1,11 @@
-try
-{
-    Import-Module -Name DeeplTranslate -Force
-}
-catch
-{
-    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-    Install-Module -Name DeeplTranslate
-    Import-Module -Name DeeplTranslate -Force
-}
+Import-Module -Name DeeplTranslate -Force
 
+if (-not (Get-Module -Name DeeplTranslate))
+{
+     Write-Error "The DeeplTranslate module is not installed, execute this command 'Install-Module -Name DeeplTranslate -Force' in your PowerShell console to be able to use the DeepL API."
+
+     while ($true) { $true } 
+}
 
 $script:SourceLanguagesCsv = ConvertFrom-Csv -InputObject (Get-Content "$PSScriptRoot/SourceLanguages.csv" -Raw)
 $script:TargetLanguagesCsv = ConvertFrom-Csv -InputObject (Get-Content "$PSScriptRoot/TargetLanguages.csv" -Raw)
