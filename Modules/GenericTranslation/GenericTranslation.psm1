@@ -222,8 +222,6 @@ function Invoke-ItemTranslation
         [Parameter(Mandatory=$true)]
         [string] $ItemPattern,
 
-        [scriptblock] $OnGetItem,
-
         [Parameter(Mandatory=$true)]
         [string] $SourceLanguage,
 
@@ -231,7 +229,32 @@ function Invoke-ItemTranslation
         [string[]] $TargetLanguage,
 
         [Parameter(Mandatory=$true)]
-        [scriptblock] $OnTranslateItem
+        [hashtable] $DecodeMap,
+
+        [scriptblock] $OnGetItem = { $name, $content = $args
+
+            $decodedContent = Convert-String $content -Mode Decode -DecodeMap $DecodeMap
+    
+            [pscustomobject]@{
+                Name = $name
+                Content = $decodedContent
+            }
+        },
+
+        [scriptblock] $OnTranslateItem = { $item, $source, $target = $args
+
+            $translatedContent = Invoke-StringTranslation `
+                -InputObject $item.Content `
+                -SourceLanguage $source `
+                -TargetLanguage $target
+    
+            $encodedTranslatedContent = Convert-String $translatedContent -Mode Encode -DecodeMap $DecodeMap
+    
+            [pscustomobject]@{
+                Name = $item.Name
+                TranslatedContent = $encodedTranslatedContent
+            }
+        }
     )
 
     $itemsPerTargetLanguage = New-Object object[] $TargetLanguage.Count
