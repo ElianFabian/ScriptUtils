@@ -24,7 +24,7 @@ function Invoke-StringTranslation
         [string] $TargetLanguage
     )
 
-    # The Google Translate API stop working propertly
+    # The Google Translate API sometimes doesn't work
     # $response = Invoke-GoogleTranslate `
     #     -InputObject $InputObject `
     #     -SourceLanguage $SourceLanguage `
