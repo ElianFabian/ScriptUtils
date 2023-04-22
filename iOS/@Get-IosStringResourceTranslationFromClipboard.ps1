@@ -5,7 +5,7 @@ Import-Module -Name "$PSScriptRoot/../Modules/GenericTranslation"
 $Params =
 @{
     InputObject = (Get-Clipboard -Raw)
-    
+
     SourceLanguage = 'English'
     TargetLanguage =
     @(
