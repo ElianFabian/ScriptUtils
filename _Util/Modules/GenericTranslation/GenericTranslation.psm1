@@ -6,10 +6,10 @@ Import-Module -Name @(
 
 
 
-$global:allLanguages = Invoke-MyMemory -AvailableLanguages
+$script:allLanguages = Invoke-MyMemory -AvailableLanguages
 
 $LanguageToCode = @{}
-foreach ($row in $global:allLanguages)
+foreach ($row in $script:allLanguages)
 {
     $LanguageToCode[$row.Language] = $row.LanguageCode
 }
@@ -171,8 +171,13 @@ function Convert-String
     )
 
     $decodedString = $InputObject
+    $decodeMapEnumerator = switch ($Mode)
+    {
+        Decode { $DecodeMap.GetEnumerator() }
+        Encode { $DecodeMap.GetEnumerator() | Sort-Object -Descending }
+    }
 
-    foreach ($pair in $DecodeMap.GetEnumerator())
+    foreach ($pair in $decodeMapEnumerator)
     {
         $encodedValue = $pair.Key
         $decodedValue = $pair.Value
@@ -186,23 +191,23 @@ function Convert-String
     return $decodedString
 }
 
-$global:CurrentTranslatedItemsCount = 0
-$global:StartTimeInUnixTimeSeconds = $null
+$script:CurrentTranslatedItemsCount = 0
+$script:StartTimeInUnixTimeSeconds = $null
 
 function ShowTranslationProgress([int] $TotalItemCount)
 {
     if ($null -eq $StartTimeInUnixTimeSeconds)
     {
-        $global:StartTimeInUnixTimeSeconds = [System.DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+        $script:StartTimeInUnixTimeSeconds = [System.DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     }
 
-    $global:CurrentTranslatedItemsCount++
+    $script:CurrentTranslatedItemsCount++
 
-    [double] $currentTimeSinceStart = ([System.DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - $global:StartTimeInUnixTimeSeconds)
-    [double] $translationsPerSecond = $global:CurrentTranslatedItemsCount / $currentTimeSinceStart
-    [int]    $timeLeft              = ($TotalItemCount - $global:CurrentTranslatedItemsCount) / $translationsPerSecond
+    [double] $currentTimeSinceStart = ([System.DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - $script:StartTimeInUnixTimeSeconds)
+    [double] $translationsPerSecond = $script:CurrentTranslatedItemsCount / $currentTimeSinceStart
+    [int]    $timeLeft              = ($TotalItemCount - $script:CurrentTranslatedItemsCount) / $translationsPerSecond
 
-    $percentComplete                = [math]::Round($global:CurrentTranslatedItemsCount / $TotalItemCount * 100)
+    $percentComplete                = [math]::Round($script:CurrentTranslatedItemsCount / $TotalItemCount * 100)
     $timeLeftInSeconds              = ([timespan]::FromSeconds($timeLeft) -f '')
     $currentTimeSinceStartInSeconds = ([timespan]::FromSeconds($currentTimeSinceStart) -f '')
 
@@ -231,31 +236,16 @@ function Invoke-ItemTranslation
         [Parameter(Mandatory=$true)]
         [hashtable] $DecodeMap,
 
-        [scriptblock] $OnGetItem = { $name, $content = $args
+        [Parameter(Mandatory=$true)]
+        [scriptblock] $OnGetItem,
 
-            $decodedContent = Convert-String $content -Mode Decode -DecodeMap $DecodeMap
-    
-            [pscustomobject]@{
-                Name = $name
-                Content = $decodedContent
-            }
-        },
-
-        [scriptblock] $OnTranslateItem = { $item, $source, $target = $args
-
-            $translatedContent = Invoke-StringTranslation `
-                -InputObject $item.Content `
-                -SourceLanguage $source `
-                -TargetLanguage $target
-    
-            $encodedTranslatedContent = Convert-String $translatedContent -Mode Encode -DecodeMap $DecodeMap
-    
-            [pscustomobject]@{
-                Name = $item.Name
-                TranslatedContent = $encodedTranslatedContent
-            }
-        }
+        [Parameter(Mandatory=$true)]
+        [scriptblock] $OnTranslateItem
     )
+
+    $script:CurrentTranslatedItemsCount = 0
+    $script:StartTimeInUnixTimeSeconds = $null
+
 
     $itemsPerTargetLanguage = New-Object object[] $TargetLanguage.Count
 

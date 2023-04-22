@@ -1,22 +1,22 @@
-$script:languagesCsv = ConvertFrom-Csv -InputObject (Get-Content "$PSScriptRoot/Languages.csv" -Raw)
+$script:LanguagesCsv = ConvertFrom-Csv -InputObject (Get-Content "$PSScriptRoot/Languages.csv" -Raw)
 
 $LanguageToCode = @{}
 $CodeToLanguage = @{}
 
-foreach ($row in $script:languagesCsv)
+foreach ($row in $script:LanguagesCsv)
 {
     $LanguageToCode[$row.Language] = $row.Code
     $CodeToLanguage[$row.Code] = $row.Language
 }
 
-$script:pairOfSourceLanguageAndCode = $script:languagesCsv | ForEach-Object { $_.Language, $_.Code }
-$script:pairOfTargetLanguageAndCode = $script:languagesCsv | Where-Object { $_.Code -ine 'auto' } | ForEach-Object { $_.Language, $_.Code } 
+$script:PairOfSourceLanguageAndCode = $script:LanguagesCsv | ForEach-Object { $_.Language, $_.Code }
+$script:PairOfTargetLanguageAndCode = $script:LanguagesCsv | Where-Object { $_.Code -ine 'auto' } | ForEach-Object { $_.Language, $_.Code } 
 
 class SourceLanguage : System.Management.Automation.IValidateSetValuesGenerator
 {
     [String[]] GetValidValues()
     {
-        return $script:pairOfSourceLanguageAndCode
+        return $script:PairOfSourceLanguageAndCode
     }
 }
 
@@ -24,7 +24,7 @@ class TargetLanguage : System.Management.Automation.IValidateSetValuesGenerator
 {
     [String[]] GetValidValues()
     {
-        return $script:pairOfTargetLanguageAndCode
+        return $script:PairOfTargetLanguageAndCode
     }
 }
 
@@ -53,7 +53,7 @@ class TargetLanguage : System.Management.Automation.IValidateSetValuesGenerator
 
     .OUTPUTS
     PSCustomObject
-    array
+    PSCustomObject[]
 
     .NOTES
     This function uses the free Google Translate API, if you try doing parallelism it will block.
@@ -87,7 +87,7 @@ function Invoke-GoogleTranslate
 
     if ($AvailableLanguages)
     {
-        return $script:languagesCsv
+        return $script:LanguagesCsv
     }
 
     if ($ReturnType -in $ListOfSingleWordReturnType -and ($InputObject.Trim().Contains(' ') -or $InputObject.Trim().Contains("`n")))

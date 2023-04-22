@@ -1,0 +1,1 @@
+& "$PSScriptRoot\..\..\_Util\Functions\@Get-AndroidStringResourceTranslationFromClipboard.ps1"
