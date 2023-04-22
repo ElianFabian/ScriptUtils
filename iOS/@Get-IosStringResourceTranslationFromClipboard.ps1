@@ -23,7 +23,7 @@ $Params =
 $DecodeMap = 
 @{
     "\'" = "'"
-    '\"' = "'"
+    '\"' = '"'
     "\\" = "\"
     "\n" = [System.Environment]::NewLine
 }
