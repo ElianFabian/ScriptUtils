@@ -1,6 +1,7 @@
 Import-Module -Name @(
         "$PSScriptRoot/../PSMyMemory",
-        "$PSScriptRoot/../PSDeepl"
+        "$PSScriptRoot/../PSDeepl",
+        "$PSScriptRoot/../PSGoogleTranslate"
     )
 
 
@@ -28,7 +29,7 @@ function Invoke-StringTranslation
     #     -InputObject $InputObject `
     #     -SourceLanguage $SourceLanguage `
     #     -TargetLanguage $TargetLanguage
-    #
+    
     # return $response.Translation.Trim()
 
     if ($TargetLanguage -ne 'Catalan')
