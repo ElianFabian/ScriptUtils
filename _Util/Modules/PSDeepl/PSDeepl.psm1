@@ -105,7 +105,8 @@ function Invoke-Deepl
         -ApiKey $DeeplApiKey `
         -TextToTranslate $InputObject `
         -SourceLanguage $sourceLanguageCode `
-        -TargetLanguage $targetLanguageCode
+        -TargetLanguage $targetLanguageCode `
+        -Formality less
     
     return $response.TargetText
 }
