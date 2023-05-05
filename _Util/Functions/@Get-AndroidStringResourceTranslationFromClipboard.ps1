@@ -4,12 +4,10 @@ $Params =
 
     ItemPattern = '<string name="(.+)">(.+)<\/string>'
 
-    DecodeMap =
-    @{
+    DecodeMap = [ordered] @{
         "\'"    = "'"
-        '&amp;' = '&'
-        '&gt;'  = '>'
         '&lt;'  = '<'
+        '&amp;' = '&'
         "\n"    = [System.Environment]::NewLine
     }
 }

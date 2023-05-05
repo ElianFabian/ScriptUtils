@@ -167,17 +167,17 @@ function Convert-String
         [string] $Mode,
 
         [Parameter(Mandatory=$true)]
-        [hashtable] $DecodeMap
+        [System.Collections.Specialized.OrderedDictionary] $DecodeMap
     )
 
     $decodedString = $InputObject
-    $decodeMapEnumerator = switch ($Mode)
+    $mapWithRightOrder = switch ($Mode)
     {
-        Decode { $DecodeMap.GetEnumerator() }
-        Encode { $DecodeMap.GetEnumerator() | Sort-Object -Descending }
+        Decode { $DecodeMap }
+        Encode { GetReversedHashtable $DecodeMap }
     }
 
-    foreach ($pair in $decodeMapEnumerator)
+    foreach ($pair in $mapWithRightOrder.GetEnumerator())
     {
         $encodedValue = $pair.Key
         $decodedValue = $pair.Value
@@ -190,6 +190,25 @@ function Convert-String
     }
     return $decodedString
 }
+
+function GetReversedHashtable
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [System.Collections.Specialized.OrderedDictionary]$Hashtable
+    )
+
+    $reversedHashtable = [ordered]@{}
+    for ($i = $Hashtable.Keys.Count - 1; $i -ge 0; $i--) {
+        $key = $Hashtable.Keys[$i]
+        $value = $Hashtable[$key]
+        $reversedHashtable[$key] = $value
+    }
+    return $reversedHashtable
+}
+
 
 $script:CurrentTranslatedItemsCount = 0
 $script:StartTimeInUnixTimeSeconds = $null
@@ -234,7 +253,7 @@ function Invoke-ItemTranslation
         [string[]] $TargetLanguage,
 
         [Parameter(Mandatory=$true)]
-        [hashtable] $DecodeMap,
+        [System.Collections.Specialized.OrderedDictionary] $DecodeMap,
 
         [Parameter(Mandatory=$true)]
         [scriptblock] $OnGetItem,

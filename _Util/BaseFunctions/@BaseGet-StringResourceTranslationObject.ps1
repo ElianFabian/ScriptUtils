@@ -19,7 +19,7 @@ param
     [string] $ItemPattern,
 
     [Parameter(Mandatory=$true)]
-    [hashtable] $DecodeMap
+    [System.Collections.Specialized.OrderedDictionary] $DecodeMap
 )
 
 
