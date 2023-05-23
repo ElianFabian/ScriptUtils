@@ -14,7 +14,7 @@ $Params =
     }
 
     GetStringResource = { param([string] $key, [string] $value)
-        """$key"" = ""$value"""
+        """$key"" = ""$value"";"
     }
 }
 
