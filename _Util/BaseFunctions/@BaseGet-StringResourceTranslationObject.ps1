@@ -63,4 +63,18 @@ $Params =
 
 
 
-return Invoke-ItemTranslation @Params
+$translationsPerLanguage = Invoke-ItemTranslation @Params
+
+if ($null -eq $translationsPerLanguage)
+{
+    Write-Host "Couldn't find any string resource in your clipboard.`n" -ForegroundColor Red
+    Write-Host "Your clipboard content:`n" -ForegroundColor Green
+    Write-Host (Get-Clipboard -Raw)
+
+    while ($true)
+    {
+        Read-Host
+    }
+}
+
+return $translationsPerLanguage

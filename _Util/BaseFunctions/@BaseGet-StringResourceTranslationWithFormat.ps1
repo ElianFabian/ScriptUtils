@@ -20,20 +20,6 @@ Write-Host "Reading from clipboard...`n" -ForegroundColor Green
 
 
 
-if ($null -eq $TranslationsPerLanguage)
-{
-    Clear-Host
-
-    Write-Host "Couldn't find any string resource in your clipboard.`n" -ForegroundColor Red
-    Write-Host "Your clipboard content:`n" -ForegroundColor Green
-    Write-Host (Get-Clipboard -Raw)
-
-    while ($true)
-    {
-        Read-Host
-    }
-}
-
 $targetLanguageIndex = 0
 $translationsWithFormat = New-Object pscustomobject[] $TranslationsPerLanguage.Count
 foreach ($data in $TranslationsPerLanguage)
