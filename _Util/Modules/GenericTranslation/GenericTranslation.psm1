@@ -45,7 +45,7 @@ function Invoke-StringTranslation
         }
     }
 
-    $response = Invoke-MyMemory `
+    $response = Invoke-GoogleTranslate `
         -InputObject $InputObject `
         -SourceLanguage $SourceLanguage `
         -TargetLanguage $TargetLanguage
