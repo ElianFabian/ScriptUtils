@@ -1,3 +1,31 @@
 // Get all the branches associated with a commit
  git branch --contains $commitId
 
+
+// Go to commit without modifying the history
+// Git checkout $commitId
+
+
+// Save stash
+git stash save $message
+
+// Show all stashes
+git stash list
+
+// Apply stash
+git stash apply $index
+
+// Delete stash
+git stash drop $index
+
+// Apply and then drop stash
+git stash pop $index
+
+// Show current stash files
+git stash show
+ - params:
+	-all: show files content changes
+
+
+// Allows to use binary search to find a commit that introduced a bug | https://youtu.be/P3ZR_s3NFvM
+git bisect
