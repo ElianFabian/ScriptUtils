@@ -1,0 +1,3 @@
+// Get all the branches associated with a commit
+ git branch --contains $commitId
+
