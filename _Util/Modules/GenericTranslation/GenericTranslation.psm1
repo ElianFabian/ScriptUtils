@@ -24,15 +24,12 @@ function Invoke-StringTranslation
         [string] $TargetLanguage
     )
 
-    # The Google Translate API sometimes doesn't work
-    # $response = Invoke-GoogleTranslate `
-    #     -InputObject $InputObject `
-    #     -SourceLanguage $SourceLanguage `
-    #     -TargetLanguage $TargetLanguage
-    
-    # return $response.Translation.Trim()
+    if ([string]:: IsNullOrWhiteSpace($InputObject))
+    {
+        return $InputObject
+    }
 
-    if ($TargetLanguage -ne 'Catalan')
+    if (($TargetLanguage -ne 'Catalan') -and ($TargetLanguage -ne 'Arabic'))
     {
         $translation = Invoke-Deepl `
             -InputObject $InputObject `
@@ -41,7 +38,10 @@ function Invoke-StringTranslation
 
         if ($translation)
         {
-            return $translation.Trim()
+            return @{
+                IsError = $false
+                Data = $translation.Trim()
+            }
         }
     }
 
@@ -55,10 +55,16 @@ function Invoke-StringTranslation
         $deeplLink           = GenerateDeeplLink @PSBoundParameters
         $googleTranslateLink = GenerateGoogleTranslateLink @PSBoundParameters
 
-        return "`n    Translation limit exceeded, try these alternatives:`n`n    $deeplLink`n    $googleTranslateLink`n    "
+        return @{
+            IsError = $true
+            Message = "`n    Couldn't translate. Please, try these alternatives:`n`n    $deeplLink`n    $googleTranslateLink`n"
+        }
     }
 
-    return $response.Translation.Trim()
+    return @{
+        IsError = $false
+        Data = $response.Translation.Trim()
+    }
 }
 
 function GenerateGoogleTranslateLink

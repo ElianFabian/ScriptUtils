@@ -47,12 +47,19 @@ $Params =
 
     OnTranslateItem = { $item, $source, $target = $args
 
-        $translatedContent = Invoke-StringTranslation `
+        $result = Invoke-StringTranslation `
             -InputObject $item.Content `
             -SourceLanguage $source `
             -TargetLanguage $target
 
-        $encodedTranslatedContent = Convert-String $translatedContent -Mode Encode -DecodeMap $DecodeMap
+        $encodedTranslatedContent = if ($result.IsError)
+        {
+            $result.Message
+        }
+        else
+        {
+            Convert-String $result.Data -Mode Encode -DecodeMap $DecodeMap
+        }
 
         [pscustomobject]@{
             Name = $item.Name

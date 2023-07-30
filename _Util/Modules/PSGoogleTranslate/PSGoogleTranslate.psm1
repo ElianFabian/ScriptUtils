@@ -112,116 +112,139 @@ function Invoke-GoogleTranslate
 
     $uri = "https://translate.googleapis.com/translate_a/single?client=gtx&dj=1&q=$query&sl=$sourceLanguageCode&tl=$targetLanguageCode&dt=t&dt=$returnTypeAsQueryParameter"
 
-    $response = Invoke-WebRequest -Uri $uri -Method Get
-
-    Write-Verbose -Message $response.Content
-
-    $data = $response.Content | ConvertFrom-Json
-
-    $result = switch ($ReturnType)
+    try
     {
-        DetectedLanguage
-        {
-            [PSCustomObject]@{
-                SourceLanguage              = $data.src
-                SourceLanguageAsEnglishWord = $CodeToLanguage[$data.src]
-            }
-        }
-        Translation
-        {
-            [PSCustomObject]@{
-                SourceLanguage              = $data.src
-                SourceLanguageAsEnglishWord = $CodeToLanguage[$data.src]
-                TargetLanguage              = $targetLanguageCode
-                TargetLanguageAsEnglishWord = $CodeToLanguage[$targetLanguageCode]
-                Translation = $data.sentences | Select-Object -ExpandProperty trans | Join-String
-            }
-        }
-        Alternative
-        {
-            [PSCustomObject]@{
-                SourceLanguage              = $data.src
-                SourceLanguageAsEnglishWord = $CodeToLanguage[$data.src]
-                TargetLanguage              = $targetLanguageCode
-                TargetLanguageAsEnglishWord = $CodeToLanguage[$targetLanguageCode]
-                AlternativesPerLine = $data.alternative_translations
-                    | Where-Object { $null -ne $_.alternative }
-                    | Group-Object { $_.src_phrase }
-                    | ForEach-Object { 
-                        [PSCustomObject]@{
-                            SourceLine = $_.Name
-                            TranslationAlternatives = @($_.Group[0].alternative | ForEach-Object { $_.word_postproc })
-                        }
-                    }
-            }
-        }
-        Dictionary
-        {
-            [PSCustomObject]@{
-                SourceLanguage              = $data.src
-                SourceLanguageAsEnglishWord = $CodeToLanguage[$data.src]
-                Dictionary = $data.dict | ForEach-Object { 
-                    [PSCustomObject]@{
-                        WordClass = $_.pos
-                        Terms = $_.terms
-                        Entries = foreach ($wordData in $_.entry)
-                        {
-                            [PSCustomObject]@{
-                                Word = $wordData.word
-                                ReverseTranslations = $wordData.reverse_translation
-                                Score = $wordData.score
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        Definition 
-        { 
-            [PSCustomObject]@{
-                SourceLanguage              = $data.src
-                SourceLanguageAsEnglishWord = $CodeToLanguage[$data.src]
-                Definitions = foreach ($definitionData in $data.definitions)
-                {
-                    [PSCustomObject]@{
-                        WordClass = $definitionData.pos
-                        Glossary = @($definitionData.entry | Select-Object -ExpandProperty gloss)
-                    }
-                }
-            }
-        }
-        Synonym
-        { 
-            [PSCustomObject]@{
-                SourceLanguage              = $data.src
-                SourceLanguageAsEnglishWord = $CodeToLanguage[$data.src]
-                Translation = $data.sentences.trans
-                SynonymGroupsPerWordClass = foreach ($set in $data.synsets)
-                {
-                    [PSCustomObject]@{
-                        WordClass = $set.pos
-                        Groups = foreach ($synonymData in $set.entry)
-                        {
-                            [PSCustomObject]@{
-                                Register = $synonymData.label_info.register
-                                Synonyms = @($synonymData.synonym)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        Example
-        {
-            [PSCustomObject]@{
-                SourceLanguage = $data.src
-                Translation = $data.sentences.trans
-                Examples = @($data.examples[0] | Select-Object -ExpandProperty example | Select-Object -ExpandProperty text)
-            }
-        }
-    }
+        $response = Invoke-WebRequest -Uri $uri -Method Get
 
-    return $result
+        Write-Verbose -Message $response.Content
+
+        $data = $response.Content | ConvertFrom-Json
+
+        $result = switch ($ReturnType)
+        {
+            DetectedLanguage
+            {
+                [PSCustomObject]@{
+                    SourceLanguage              = $data.src
+                    SourceLanguageAsEnglishWord = $CodeToLanguage[$data.src]
+                }
+            }
+            Translation
+            {
+                [PSCustomObject]@{
+                    SourceLanguage              = $data.src
+                    SourceLanguageAsEnglishWord = $CodeToLanguage[$data.src]
+                    TargetLanguage              = $targetLanguageCode
+                    TargetLanguageAsEnglishWord = $CodeToLanguage[$targetLanguageCode]
+                    Translation = $data.sentences | Select-Object -ExpandProperty trans | Join-String
+                }
+            }
+            Alternative
+            {
+                [PSCustomObject]@{
+                    SourceLanguage              = $data.src
+                    SourceLanguageAsEnglishWord = $CodeToLanguage[$data.src]
+                    TargetLanguage              = $targetLanguageCode
+                    TargetLanguageAsEnglishWord = $CodeToLanguage[$targetLanguageCode]
+                    AlternativesPerLine = $data.alternative_translations
+                        | Where-Object { $null -ne $_.alternative }
+                        | Group-Object { $_.src_phrase }
+                        | ForEach-Object { 
+                            [PSCustomObject]@{
+                                SourceLine = $_.Name
+                                TranslationAlternatives = @($_.Group[0].alternative | ForEach-Object { $_.word_postproc })
+                            }
+                        }
+                }
+            }
+            Dictionary
+            {
+                [PSCustomObject]@{
+                    SourceLanguage              = $data.src
+                    SourceLanguageAsEnglishWord = $CodeToLanguage[$data.src]
+                    Dictionary = $data.dict | ForEach-Object { 
+                        [PSCustomObject]@{
+                            WordClass = $_.pos
+                            Terms = $_.terms
+                            Entries = foreach ($wordData in $_.entry)
+                            {
+                                [PSCustomObject]@{
+                                    Word = $wordData.word
+                                    ReverseTranslations = $wordData.reverse_translation
+                                    Score = $wordData.score
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Definition 
+            { 
+                [PSCustomObject]@{
+                    SourceLanguage              = $data.src
+                    SourceLanguageAsEnglishWord = $CodeToLanguage[$data.src]
+                    Definitions = foreach ($definitionData in $data.definitions)
+                    {
+                        [PSCustomObject]@{
+                            WordClass = $definitionData.pos
+                            Glossary = @($definitionData.entry | Select-Object -ExpandProperty gloss)
+                        }
+                    }
+                }
+            }
+            Synonym
+            { 
+                [PSCustomObject]@{
+                    SourceLanguage              = $data.src
+                    SourceLanguageAsEnglishWord = $CodeToLanguage[$data.src]
+                    Translation = $data.sentences.trans
+                    SynonymGroupsPerWordClass = foreach ($set in $data.synsets)
+                    {
+                        [PSCustomObject]@{
+                            WordClass = $set.pos
+                            Groups = foreach ($synonymData in $set.entry)
+                            {
+                                [PSCustomObject]@{
+                                    Register = $synonymData.label_info.register
+                                    Synonyms = @($synonymData.synonym)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Example
+            {
+                [PSCustomObject]@{
+                    SourceLanguage = $data.src
+                    Translation = $data.sentences.trans
+                    Examples = @($data.examples[0] | Select-Object -ExpandProperty example | Select-Object -ExpandProperty text)
+                }
+            }
+        }
+
+        return $result
+    }
+    catch  [System.Net.WebException]
+    {
+        Write-Host "A network error occurred: $($_.Exception.Message)"
+        return $null
+    }
+    catch [System.Net.Sockets.SocketException]
+    {
+        Write-Error "Host not found or no internet connection: $($_.Exception.Message)"
+        return $null
+    }
+    catch [Microsoft.PowerShell.Commands.HttpResponseException]
+    {
+        Write-Host "HTTP error occurred: $($_.Exception.Message)"
+        return $null
+    }
+    catch
+    {
+        Write-Error "An unknown error occurred: $($_.Exception.Message)"
+        return $null
+    }
 }
 
 

@@ -101,14 +101,21 @@ function Invoke-Deepl
 
     $sourceLanguageCode, $targetLanguageCode = TryConvertLanguageToCode $SourceLanguage $TargetLanguage
 
-    $response = Invoke-DeeplTranslateText `
+    try
+    {
+        $response = Invoke-DeeplTranslateText `
         -ApiKey $DeeplApiKey `
         -TextToTranslate $InputObject `
         -SourceLanguage $sourceLanguageCode `
         -TargetLanguage $targetLanguageCode `
         -Formality less
     
-    return $response.TargetText
+        return $response.TargetText
+    }
+    catch
+    {
+        return $null
+    }
 }
 
 
