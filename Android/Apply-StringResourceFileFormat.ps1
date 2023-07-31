@@ -1,5 +1,4 @@
 
-# TODO: Allow to work with plural strings
 function Get-BaseStringResourceFileFormat
 {
     param
