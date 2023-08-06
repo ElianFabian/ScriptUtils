@@ -2,9 +2,9 @@ $Params =
 @{
     InputObject = (Get-Clipboard -Raw)
 
-    ItemPattern = '"(.+)" = "(.+)";'
+    ItemPattern = '"(?<Key>.+)" = "(?<Value>.+)";'
 
-    DecodeMap =  [ordered] @{
+    DecodeMap = [ordered] @{
         "\'" = "'"
         '\"' = '"'
         "\n" = [System.Environment]::NewLine

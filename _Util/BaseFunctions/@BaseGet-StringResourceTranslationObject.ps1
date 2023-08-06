@@ -35,35 +35,35 @@ $Params =
     ItemPattern    = $ItemPattern
     DecodeMap      = $DecodeMap
 
-    OnGetItem = { $name, $content = $args
+    OnGetItem = { param($key, $value)
 
-        $decodedContent = Convert-String $content -Mode Decode -DecodeMap $DecodeMap
+        $decodedValue = Convert-String $value -DecodeMap $DecodeMap -Mode Decode
 
         [pscustomobject]@{
-            Name = $name
-            Content = $decodedContent
+            Key = $key
+            Value = $decodedValue
         }
     }
 
     OnTranslateItem = { $item, $source, $target = $args
 
         $result = Invoke-StringTranslation `
-            -InputObject $item.Content `
+            -InputObject $item.Value `
             -SourceLanguage $source `
             -TargetLanguage $target
 
-        $encodedTranslatedContent = if ($result.IsError)
+        $encodedTranslatedValue = if ($result.IsError)
         {
             $result.Message
         }
         else
         {
-            Convert-String $result.Data -Mode Encode -DecodeMap $DecodeMap
+            Convert-String $result.Data -DecodeMap $DecodeMap -Mode Encode
         }
 
         [pscustomobject]@{
-            Name = $item.Name
-            TranslatedContent = $encodedTranslatedContent
+            Key = $item.Key
+            TranslatedValue = $encodedTranslatedValue
         }
     }
 }

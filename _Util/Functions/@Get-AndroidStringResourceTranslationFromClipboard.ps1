@@ -2,7 +2,7 @@ $Params =
 @{
     InputObject = (Get-Clipboard -Raw)
 
-    ItemPattern = '<string name="(.+)">(.+)<\/string>'
+    ItemPattern = '<string name="(?<Key>.+)">(?<Value>.+)<\/string>'
 
     DecodeMap = [ordered] @{
         "\'"    = "'"

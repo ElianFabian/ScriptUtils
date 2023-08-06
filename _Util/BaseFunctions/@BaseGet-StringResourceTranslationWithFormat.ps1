@@ -30,7 +30,7 @@ foreach ($data in $TranslationsPerLanguage)
        LanguageName = $data.LanguageName
        Translations = foreach ($stringResourceData in $data.Translations)
        {
-           (& $GetStringResource -key $stringResourceData.Name -value $stringResourceData.TranslatedContent)
+           (& $GetStringResource -key $stringResourceData.Key -value $stringResourceData.TranslatedValue)
        }
     }
 

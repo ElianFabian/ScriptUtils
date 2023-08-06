@@ -116,9 +116,9 @@ function GenerateDeeplLink
         <string name="name">Alice</string>
         <string name="age">25</string>
     "@ `
-        -ItemPattern '<string name="(.+)">(.+)<\/string>' `
-        -OnGetItem { $name, $content = $args  
-            "$name = ""$content"""
+        -ItemPattern '<string name="(?<Key>.+)">(?<Value>.+)<\/string>' `
+        -OnGetItem { $key, $value = $args  
+            "$key = ""$value"""
         }
     output:
         name = "Alice"
@@ -151,7 +151,10 @@ function Get-ItemFromStringWithRegex
     {
         $_first, $groups = foreach ($group in $match.Groups) { $group.Value }
 
-        $newItem = $OnGetItem.Invoke($groups)
+        $key   = $match.Groups["Key"]
+        $value = $match.Groups["Value"]
+
+        $newItem = $OnGetItem.Invoke($key, $value)
 
         $arrayOfItems[$itemIndex] = $newItem
 
