@@ -6,7 +6,9 @@ Import-Module -Name @(
 
 
 
-$script:allLanguages = Invoke-MyMemory -AvailableLanguages
+$script:allLanguages = Invoke-GoogleTranslate -AvailableLanguages
+
+$script:DeeplTargetLanguages = Invoke-Deepl -AvailableTargetLanguages | ForEach-Object { @($_.Language, $_.Code) }
 
 $LanguageToCode = @{}
 foreach ($row in $script:allLanguages)
@@ -29,7 +31,7 @@ function Invoke-StringTranslation
         return $InputObject
     }
 
-    if (($TargetLanguage -ne 'Catalan') -and ($TargetLanguage -ne 'Arabic'))
+    if ($TargetLanguage -in $DeeplTargetLanguages)
     {
         $translation = Invoke-Deepl `
             -InputObject $InputObject `

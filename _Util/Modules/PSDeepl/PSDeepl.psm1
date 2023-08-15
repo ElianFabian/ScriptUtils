@@ -98,12 +98,12 @@ function Invoke-Deepl
     try
     {
         $response = Invoke-DeeplTranslateText `
-        -ApiKey $DeeplApiKey `
-        -TextToTranslate $InputObject `
-        -SourceLanguage $sourceLanguageCode `
-        -TargetLanguage $targetLanguageCode `
-        -Formality less
-    
+            -ApiKey $DeeplApiKey `
+            -TextToTranslate $InputObject `
+            -SourceLanguage $sourceLanguageCode `
+            -TargetLanguage $targetLanguageCode `
+            -Formality less
+
         return $response.TargetText
     }
     catch
