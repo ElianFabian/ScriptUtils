@@ -1,6 +1,6 @@
 param
 (
-    [string] $AndroidStudioProjectPath = 'D:/Todo/Documentos/Git/AndroidStudio/PadelManager',
+    [string] $AndroidStudioProjectPath = 'C:\Users\empresa\Documents\GitHub\PadelManager',
 
     [ValidateSet('app', 'rrss')]
     [string] $Module = "app"
@@ -20,7 +20,7 @@ $displayInfoSb = [System.Text.StringBuilder]::new()
 
 foreach ($data in $translationsPerLanguageWithFormat)
 {
-    $currentStringResourceFilePath = "$AppResourceFolder/values-$($data.LanguageCode)/strings.xml"
+    $currentStringResourceFilePath = "$AppResourceFolder/values-$($data.Code)/strings.xml"
 
     $translatedStringResourceSb = [System.Text.StringBuilder]::new()
 
@@ -32,7 +32,7 @@ foreach ($data in $translationsPerLanguageWithFormat)
         $lineSeparator = $NewLine
     }
 
-    $displayInfoSb.Append("`n<!-- $($data.LanguageName) | Modified file: $currentStringResourceFilePath -->$NewLine") > $null
+    $displayInfoSb.Append("`n<!-- $($data.Language) | Modified file: $currentStringResourceFilePath -->$NewLine") > $null
     $displayInfoSb.Append("$translatedStringResourceSb$NewLine") > $null
 
     $translatedStringResourceSb.Append("$NewLine</resources>") > $null
@@ -44,7 +44,7 @@ foreach ($data in $translationsPerLanguageWithFormat)
     Set-Content -Path $currentStringResourceFilePath -Value $stringResourceFileWithNewTranslatedContent -Encoding utf8
 }
 
-Clear-Host
+#Clear-Host
 Write-Host $displayInfoSb.ToString().Replace("    ", "")
 
 

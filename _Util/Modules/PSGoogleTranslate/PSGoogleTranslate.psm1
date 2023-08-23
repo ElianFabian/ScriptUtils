@@ -110,7 +110,7 @@ function Invoke-GoogleTranslate
     }
     else { [uri]::EscapeDataString($InputObject) }
 
-    $uri = "https://translate.googleapis.com/translate_a/single?client=gtx&dj=1&q=$query&sl=$sourceLanguageCode&tl=$targetLanguageCode&dt=t&dt=$returnTypeAsQueryParameter"
+    $uri = "https://translate.googleapis.com/translate_a/single?client=gtx&dj=1&q=$query&sl=$sourceLanguageCode&tl=$targetLanguageCode&dt=$returnTypeAsQueryParameter"
 
     try
     {

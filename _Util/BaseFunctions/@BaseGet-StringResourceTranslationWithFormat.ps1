@@ -25,9 +25,9 @@ $translationsWithFormat = New-Object pscustomobject[] $TranslationsPerLanguage.C
 foreach ($data in $TranslationsPerLanguage)
 {
     $translationsPerLanguageWithFormat = [PSCustomObject]@{
-       Header       = (& $GetHeader -targetLanguage $data.LanguageName)
-       LanguageCode = $data.LanguageCode
-       LanguageName = $data.LanguageName
+       Header   = (& $GetHeader -targetLanguage $data.Language)
+       Code     = $data.Code
+       Language = $data.Language
        Translations = foreach ($stringResourceData in $data.Translations)
        {
            (& $GetStringResource -key $stringResourceData.Key -value $stringResourceData.TranslatedValue)

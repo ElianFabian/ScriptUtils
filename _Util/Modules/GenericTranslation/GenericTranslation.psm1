@@ -13,7 +13,7 @@ $script:DeeplTargetLanguages = Invoke-Deepl -AvailableTargetLanguages | ForEach-
 $LanguageToCode = @{}
 foreach ($row in $script:allLanguages)
 {
-    $LanguageToCode[$row.Language] = $row.LanguageCode
+    $LanguageToCode[$row.Language] = $row.Code
 }
 
 
@@ -310,8 +310,8 @@ function Invoke-ItemTranslation
 
         $itemsPerTargetLanguage[$languageIndex] =
         @{
-            LanguageName = $targetLanguageItem
-            LanguageCode = $LanguageToCode[$targetLanguageItem]
+            Language = $targetLanguageItem
+            Code = $LanguageToCode[$targetLanguageItem]
             Translations = $listOfTranslatedItems
         }
 
