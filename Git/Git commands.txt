@@ -24,7 +24,7 @@ git stash pop $index
 // Show current stash files
 git stash show
  - params:
-	-all: show files content changes
+	--all: show files content changes
 
 
 // Allows to use binary search to find a commit that introduced a bug | https://youtu.be/P3ZR_s3NFvM
