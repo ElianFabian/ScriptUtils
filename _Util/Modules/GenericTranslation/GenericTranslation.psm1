@@ -109,7 +109,7 @@ function GenerateDeeplLink
     .PARAMETER InputObject
     A string of items that matches a certain pattern.
     .PARAMETER ItemPattern
-    The pattern to match each item of the given InputObject. 
+    The pattern to match each item of the given InputObject.
     .PARAMETER OnGetItem
     An script block which $args contains all the groups defined in $ItemPattern and returns an item as string.
     .EXAMPLE
@@ -119,7 +119,7 @@ function GenerateDeeplLink
         <string name="age">25</string>
     "@ `
         -ItemPattern '<string name="(?<Key>.+)">(?<Value>.+)<\/string>' `
-        -OnGetItem { $key, $value = $args  
+        -OnGetItem { $key, $value = $args
             "$key = ""$value"""
         }
     output:
