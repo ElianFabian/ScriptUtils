@@ -19,7 +19,7 @@ foreach ($row in $script:TargetLanguagesCsv)
 }
 
 $script:pairOfSourceLanguageAndCode = $script:SourceLanguagesCsv | ForEach-Object { $_.Language, $_.Code }
-$script:pairOfTargetLanguageAndCode = $script:TargetLanguagesCsv | ForEach-Object { $_.Language, $_.Code } 
+$script:pairOfTargetLanguageAndCode = $script:TargetLanguagesCsv | ForEach-Object { $_.Language, $_.Code }
 
 class SourceLanguage : System.Management.Automation.IValidateSetValuesGenerator
 {
@@ -38,7 +38,7 @@ class TargetLanguage : System.Management.Automation.IValidateSetValuesGenerator
 }
 
 
-$DeeplApiKey = '3329b827-c3f9-79a3-1d77-6d7f1694e42c:fx'
+$DeeplApiKey = $env:DeeplKey
 
 
 <#
