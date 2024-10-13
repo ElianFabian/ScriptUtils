@@ -9,6 +9,7 @@ $Params =
         '&lt;'  = '<'
         '&amp;' = '&'
         "\n"    = [System.Environment]::NewLine
+        "\t"    = "`t"
     }
 }
 
