@@ -1,7 +1,6 @@
 param
 (
-    [string] $AndroidStudioProjectPath = 'C:\Users\empresa\Documents\GitHub\PadelManager',
-
+    [string] $AndroidStudioProjectPath = 'C:\Users\empresa\Documents\Elian\Proyectos\Vola\android',
     [ValidateSet('app', 'rrss')]
     [string] $Module = "app"
 )
