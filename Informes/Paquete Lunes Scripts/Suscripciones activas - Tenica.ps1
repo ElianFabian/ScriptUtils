@@ -17,7 +17,7 @@ $data = Import-Csv -Path $soldProductsReportFromPayProFile -Delimiter ';' | Sele
     @{ Name = 'Order Status'; Expression = { $_.'Order Status' } }
     @{ Name = 'Order Item ID'; Expression = { $_.'Order Item ID' } }
     @{ Name = 'Order Item Type'; Expression = { $_.'Order Item Type' } }
-    @{ Name = 'Date/Time (UTC)'; Expression = { $_.'Date/Time (UTC)' } }
+    @{ Name = 'Date/Time (UTC)'; Expression = { Convert-PayProDateFormat $_.'Date/Time (UTC)' } }
     @{ Name = 'Product ID'; Expression = { $_.'Product ID' } }
     @{ Name = 'Product Name'; Expression = { $_.'Product Name' } }
     @{ Name = 'Quantity'; Expression = { $_.'Quantity' } }
@@ -26,7 +26,7 @@ $data = Import-Csv -Path $soldProductsReportFromPayProFile -Delimiter ';' | Sele
     @{ Name = 'Test mode'; Expression = { $_."Test Mode" } }
     @{ Name = 'Recurring Payment'; Expression = { $_."Recurring Payment" } }
     @{ Name = 'License Key'; Expression = { $_."License Key" } }
-    # @{ Name = 'Custom Data'; Expression = { $_.'Custom Data' } }
+    @{ Name = 'Custom Data'; Expression = { $_.'Custom Data' } }
     @{ Name = 'Vola Id'; Expression = { ($_."Custom Data").SubString(5) } }
 )
 

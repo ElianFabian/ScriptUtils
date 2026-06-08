@@ -32,6 +32,25 @@ function Get-LatamCountries {
     return 'Chile', 'Uruguay', 'Paraguay', 'Argentina', 'Perú', 'Colombia'
 }
 
+function Convert-PayProDateFormat {
+
+    [OutputType([string])]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $PayProDate
+    )
+
+    $format = 'MM/dd/yyyy HH:mm:ss'
+    try {
+        $date = [DateTime]::ParseExact($PayProDate, $format, [System.Globalization.CultureInfo]::InvariantCulture)
+    }
+    catch {
+        throw "El formato de fecha no es válido. Se esperaba 'MM/dd/yyyy HH:mm:ss', por ejemplo '05/29/2026 15:07:29'. Valor recibido: '$PayProDate'"
+    }
+
+    return $date.ToString('yyyy-MM-dd HH:mm')
+}
+
 function Export-VolaDataAsCsv {
 
     param (
@@ -59,8 +78,14 @@ function Export-VolaDataAsCsv {
         throw "Si se establece la fecha de inicio también se tiene que establecer la fecha de fin"
     }
 
+    $sanitizedData = if ($Data) {
+        $Data
+    }
+    else {
+        @()
+    }
     $paisesLatam = Get-LatamCountries
-    $latamData = $Data | Where-Object { $_.'País' -in $paisesLatam }
+    $latamData = $sanitizedData | Where-Object { $_.'País' -in $paisesLatam }
 
     $fechaActual = Get-Date -Format 'yyyy-MM-dd'
 
@@ -71,7 +96,7 @@ function Export-VolaDataAsCsv {
         $rangoDeFecha = "__$FechaInicio-$FechaFin"
     }
 
-    $Data | Export-Csv -Delimiter ';' -Path "$carpeta/$($NombreDeFicheroBase)__$($fechaActual)$rangoDeFecha.csv" -Force -Verbose
+    $sanitizedData | Export-Csv -Delimiter ';' -Path "$carpeta/$($NombreDeFicheroBase)__$($fechaActual)$rangoDeFecha.csv" -Force -Verbose
     $latamData | Export-Csv -Delimiter ';' -Path "$carpeta/$($NombreDeFicheroBase)__$($fechaActual)$rangoDeFecha-LATAM.csv" -Force -Verbose
 }
 

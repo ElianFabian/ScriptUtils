@@ -1,4 +1,3 @@
-# Función para validar si una cadena es una fecha válida en formato yyyy-MM-dd y si es Lunes
 function Test-EsLunesValido {
     param (
         [string] $fechaStr
@@ -29,6 +28,28 @@ function Get-FechaSemanaAnterior {
 
     $dateInicio = [DateTime]::ParseExact($fechaInicioStr, "yyyy-MM-dd", $null)
     return $dateInicio.AddDays(-7).ToString("yyyy-MM-dd")
+}
+
+function Es-PrimerLunesDelMes {
+    param (
+        [string] $fechaInicioStr
+    )
+
+    $dateInicio = [DateTime]::ParseExact($fechaInicioStr, "yyyy-MM-dd", $null)
+    return $dateInicio.DayOfWeek -eq 'Monday' -and $dateInicio.Day -le 7
+}
+
+function Get-FirstAndLastDateOfPreviousMonth {
+    param (
+        [string] $fechaInicioStr
+    )
+
+    $dateInicio = [DateTime]::ParseExact($fechaInicioStr, "yyyy-MM-dd", $null)
+    $firstOfCurrentMonth = Get-Date -Year $dateInicio.Year -Month $dateInicio.Month -Day 1
+    $lastOfPreviousMonth = $firstOfCurrentMonth.AddDays(-1)
+    $firstOfPreviousMonth = Get-Date -Year $lastOfPreviousMonth.Year -Month $lastOfPreviousMonth.Month -Day 1
+
+    return @{ Start = $firstOfPreviousMonth.ToString('yyyy-MM-dd'); End = $lastOfPreviousMonth.ToString('yyyy-MM-dd') }
 }
 
 $hoy = Get-Date
@@ -68,29 +89,54 @@ Write-Host "`nConfiguración de fechas:" -ForegroundColor Cyan
 Write-Host "  Semana actual:    $fechaInicioStr -> $fechaFinSemanaActualStr"
 Write-Host "  Semana anterior:  $fechaInicioSemanaAnteriorStr -> $fechaFinSemanaAnteriorStr`n"
 
-. "$PSScriptRoot/VolaUtil.ps1"
+$esPrimerLunesDelMes = Es-PrimerLunesDelMes $fechaInicioStr
+if ($esPrimerLunesDelMes) {
+    $rangoMesAnterior = Get-FirstAndLastDateOfPreviousMonth $fechaInicioStr
+    $fechaInicioMesAnteriorStr = $rangoMesAnterior.Start
+    $fechaFinMesAnteriorStr = $rangoMesAnterior.End
+    Write-Host "Este es el primer lunes del mes. También se generarán los informes mensuales para el mes anterior: $fechaInicioMesAnteriorStr -> $fechaFinMesAnteriorStr" -ForegroundColor Cyan
+}
+else {
+    Write-Host "No es el primer lunes del mes. Solo se generarán los informes semanales." -ForegroundColor Yellow
+}
+
+& "$PSScriptRoot/VolaUtil.ps1"
 
 Write-Host "=== Suscripciones activas ===" -ForegroundColor Cyan
 $tecnicaData = (. "$PSScriptRoot/Paquete Lunes Scripts/Suscripciones activas - Tenica.ps1")
 
-Write-Host "Ahora tienes que seleccionar el CSV de Subscriptions de PayPro (rango amplio y sin filtros)" -ForegroundColor Yellow
-Read-Host "Presiona enter para continuar..."
-$subscriptionsFile = Invoke-CrossPlatformFileSelector -Title 'Selecciona el CSV del informe de Subscriptions'
-if (-not $subscriptionsFile) {
-    throw "No se ha seleccionado el CSV de Subscriptions de PayPro."
-}
+& "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Prevision de bajas.ps1"
 
-$DbPayProData = . "$PSScriptRoot/Paquete Lunes Scripts/Suscripciones activas - DB_PayPro.ps1" -SubscriptionsFile $subscriptionsFile -TecnicaData $tecnicaData
-$DbVolaData = . "$PSScriptRoot/Paquete Lunes Scripts/Suscripciones activas - DB_Vola.ps1" -DbPayProData $DbPayProData
+do {
+    Write-Host "Ahora tienes que seleccionar el CSV de Subscriptions de PayPro (rango amplio y sin filtros)" -ForegroundColor Yellow
+    Read-Host "Presiona enter para continuar..."
+    $subscriptionsFile = Invoke-CrossPlatformFileSelector -Title 'Selecciona el CSV del informe de Subscriptions'
+    if (-not $subscriptionsFile) {
+        Write-Error "No se ha seleccionado el CSV de Subscriptions de PayPro."
+    }
+}
+while ($null -eq $subscriptionsFile)
+
+
+$DbPayProData = & "$PSScriptRoot/Paquete Lunes Scripts/Suscripciones activas - DB_PayPro.ps1" -SubscriptionsFile $subscriptionsFile -TecnicaData $tecnicaData
+& "$PSScriptRoot/Paquete Lunes Scripts/Suscripciones activas - DB_Vola.ps1" -DbPayProData $DbPayProData
+
 
 Write-Host "`n=== Informes semanales de lunes ===" -ForegroundColor Cyan
-. "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Torneos pendientes de disputar.ps1" -FechaInicio $fechaInicioStr -FechaFin $fechaFinSemanaActualStr
-. "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Torneos disputados.ps1" -FechaInicio $fechaInicioSemanaAnteriorStr -FechaFin $fechaFinSemanaAnteriorStr
-. "$PSScriptRoot/Paquete Lunes Scripts/Cuadros pagados semanal.ps1" -FechaInicio $fechaInicioSemanaAnteriorStr -FechaFin $fechaFinSemanaAnteriorStr
-. "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Estados de suscripciones.ps1" -FechaInicio $fechaInicioSemanaAnteriorStr -FechaFin $fechaFinSemanaAnteriorStr -SubscriptionsFile $subscriptionsFile
-. "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Clubes con fremium activado.ps1"
-. "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Baja de clubes.ps1" -FechaInicio $fechaInicioSemanaAnteriorStr -FechaFin $fechaFinSemanaAnteriorStr
-. "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Alta de clubes.ps1" -FechaInicio $fechaInicioSemanaAnteriorStr -FechaFin $fechaFinSemanaAnteriorStr
+& "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Torneos pendientes de disputar.ps1" -FechaInicio $fechaInicioStr -FechaFin $fechaFinSemanaActualStr
+& "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Torneos disputados.ps1" -FechaInicio $fechaInicioSemanaAnteriorStr -FechaFin $fechaFinSemanaAnteriorStr
+& "$PSScriptRoot/Paquete Lunes Scripts/Cuadros pagados semanal.ps1" -FechaInicio $fechaInicioSemanaAnteriorStr -FechaFin $fechaFinSemanaAnteriorStr
+& "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Estados de suscripciones.ps1" -FechaInicio $fechaInicioSemanaAnteriorStr -FechaFin $fechaFinSemanaAnteriorStr -SubscriptionsFile $subscriptionsFile
+& "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Clubes con fremium activado.ps1"
+& "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Baja de clubes.ps1" -FechaInicio $fechaInicioSemanaAnteriorStr -FechaFin $fechaFinSemanaAnteriorStr
+& "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Alta de clubes.ps1" -FechaInicio $fechaInicioSemanaAnteriorStr -FechaFin $fechaFinSemanaAnteriorStr
+
+if ($esPrimerLunesDelMes) {
+    Write-Host "`n=== Informes mensuales de lunes ===" -ForegroundColor Cyan
+    & "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Torneos disputados.ps1" -FechaInicio $fechaInicioMesAnteriorStr -FechaFin $fechaFinMesAnteriorStr
+    & "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Baja de clubes.ps1" -FechaInicio $fechaInicioMesAnteriorStr -FechaFin $fechaFinMesAnteriorStr
+    & "$PSScriptRoot/Paquete Lunes Scripts/Report semanal - Alta de clubes.ps1" -FechaInicio $fechaInicioMesAnteriorStr -FechaFin $fechaFinMesAnteriorStr
+}
 
 Write-Host "`nTodos los informes de lunes se han generado correctamente." -ForegroundColor Green
 Read-Host "Presiona Enter para cerrar..."

@@ -61,8 +61,10 @@ WHERE
     AND suh.start_at <= '$FechaFin 23:59:59';
 "@
 
+$data = (Get-VolaDbData -Query $sql)
+
 Export-VolaDataAsCsv -FechaInicio $FechaInicio `
     -FechaFin $FechaFin `
     -Paquete 'Lunes' `
     -NombreDeFicheroBase 'alta-de-clubes' `
-    -Data (Get-VolaDbData -Query $sql)
+    -Data $data

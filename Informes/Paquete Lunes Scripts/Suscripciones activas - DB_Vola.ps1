@@ -40,26 +40,28 @@ WHERE
     AND suh.end_at >= NOW();
 "@
 
-$data = Get-VolaDbData -Query $sql
+$data = Get-VolaDbData -Query $sql | ForEach-Object {
+    $_ | Add-Member -MemberType NoteProperty -Name 'Estado (PP)' -Value $null -PassThru `
+    | Add-Member -MemberType NoteProperty -Name 'Suscripción (PP)' -Value $null -PassThru
+}
 
 $subscriptionAndStateByClubId = @{}
 foreach ($row in $DbPayProData) {
     if ($row.'Vola Id') {
-        $subscriptionAndStateByClubId[$row.'Vola Id'] = @{
+        $value = [pscustomobject] @{
             'Estado (PP)'      = $row.'Current subscription status'
             'Suscripción (PP)' = $row.'Name'
         }
+        $subscriptionAndStateByClubId[$row.'Vola Id'] = $value
     }
 }
 
 foreach ($row in $data) {
     if ($subscriptionAndStateByClubId[$row.'ID']) {
-        $row | Add-Member -MemberType NoteProperty -Name 'Estado (PP)' -Value ($subscriptionAndStateByClubId[$row.'ID'].'Estado (PP)')
-        $row | Add-Member -MemberType NoteProperty -Name 'Suscripción (PP)' -Value ($subscriptionAndStateByClubId[$row.'ID'].'Suscripción (PP)')
+        $row.'Estado (PP)' = ($subscriptionAndStateByClubId[$row.'ID'].'Estado (PP)')
+        $row.'Suscripción (PP)' = ($subscriptionAndStateByClubId[$row.'ID'].'Suscripción (PP)')
     }
 }
 
 New-Item -Path "$PSScriptRoot/../Paquete Lunes CSV" -ItemType Directory -Force > $null
 $data | Export-Csv -LiteralPath "$PSScriptRoot/../Paquete Lunes CSV/suscripciones-activas_db-vola__$fechaActual.csv" -UseQuotes Never -Delimiter ';' > $null
-
-return $data

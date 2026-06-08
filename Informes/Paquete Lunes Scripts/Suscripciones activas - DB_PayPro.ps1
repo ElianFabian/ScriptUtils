@@ -34,8 +34,8 @@ $data = Import-Csv -Path $subscriptionsReportFromPayProFile -Delimiter ';' | Sel
     @{ Name = 'Current subscription status'; Expression = { $_.'Subscription Status' } },
     @{ Name = 'Type of renewal'; Expression = { $_.'Renewal Type' } },
     @{ Name = 'Next charge amount'; Expression = { $_.'Next Charge Amount' } },
-    @{ Name = 'Last charge date'; Expression = { $_.'Last Charge Date (UTC)' } },
-    @{ Name = 'Next charge date'; Expression = { $_.'Next Charge Date (UTC)' } },
+    @{ Name = 'Last charge date'; Expression = { Convert-PayProDateFormat ($_.'Last Charge Date (UTC)') } },
+    @{ Name = 'Next charge date'; Expression = { Convert-PayProDateFormat ($_.'Next Charge Date (UTC)') } },
     @{ Name = 'Product Id'; Expression = { $_.'Product ID' } },
     @{ Name = 'Customer first name'; Expression = { $_."Customer's First Name" } },
     @{ Name = 'Customer last name'; Expression = { $_."Customer's Last Name" } },
@@ -53,23 +53,23 @@ $data = Import-Csv -Path $subscriptionsReportFromPayProFile -Delimiter ';' | Sel
     @{ Name = 'SKU'; Expression = { $_.'SKU' } },
     @{ Name = 'Test mode'; Expression = { $_.'Test mode' } },
     @{ Name = 'Affiliate'; Expression = { $_.'Trial Ends (UTC)' } }, # I guess this is the column for 'Affiliate'
-    @{ Name = 'Created at'; Expression = { $_.'Date/Time (UTC)' } }, # I guess this is the column for 'Created at'
-    @{ Name = 'Scheduled payment at'; Expression = { $_.'Scheduled Payment At (UTC)' } },
+    @{ Name = 'Created at'; Expression = { Convert-PayProDateFormat ($_.'Date/Time (UTC)') } }, # I guess this is the column for 'Created at'
+    @{ Name = 'Scheduled payment at'; Expression = { Convert-PayProDateFormat ($_.'Scheduled Payment At (UTC)') } },
     @{ Name = 'Has trial period'; Expression = { $_.'On trial' } },
     @{ Name = 'Billing period'; Expression = { $_.'Billing period' } },
     @{ Name = 'Grace period'; Expression = { $_.'Grace period' } }
 )
 
+# paypro date format: 05/29/2026 15:07:29
+# desired format: 2024-09-23 20:24
 
 $clubIdByOrderId = @{}
 foreach ($row in $TecnicaData) {
     $clubIdByOrderId[$row.'Order ID'] = $row.'Vola Id'
-    Write-Host "orderId - volaId | $($row.'Order ID') - $($row.'Vola Id')" -ForegroundColor Cyan
 }
 
 foreach ($row in $data) {
     $row.'Vola Id' = $clubIdByOrderId[$row.'Initial order ID']
-    Write-Host "initialOrderId - volaId | $($row.'Initial order ID') - $($row.'Vola Id')" -ForegroundColor Green
 }
 
 
