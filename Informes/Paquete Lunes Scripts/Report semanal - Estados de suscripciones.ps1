@@ -6,7 +6,9 @@ param (
     [Parameter(Mandatory)]
     [string] $FechaFin,
 
-    [string] $SubscriptionsFile
+    [string] $SubscriptionsFile,
+
+    [switch] $ReturnData
 )
 
 # LUNES - ESTADOS DE SUSCRIPCIONES
@@ -145,4 +147,5 @@ Export-VolaDataAsCsv -FechaInicio $FechaInicio `
     -FechaFin $FechaFin `
     -Paquete 'Lunes' `
     -NombreDeFicheroBase 'estados-de-suscripciones' `
-    -Data $data
+    -Data $data `
+    -ReturnData:$ReturnData

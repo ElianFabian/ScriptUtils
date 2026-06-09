@@ -1,4 +1,10 @@
 
+[CmdletBinding()]
+param (
+    [string] $SubscriptionsFile,
+    [switch] $ReturnData
+)
+
 # PREVISIÓN DE BAJAS
 
 # Abajo indicas los ids de suscripción obtenidos en PayPro
@@ -10,17 +16,19 @@
 . "$PSScriptRoot/../VolaUtil.ps1"
 
 
-do {
-    Write-Host "Ahora tienes que seleccionar el CSV de Subscriptions de PayPro (lunes actual hasta lunes de dentro de 2 semanas)" -ForegroundColor Yellow
-    Read-Host "Presiona enter para continuar..."
-    $subscriptionsFile = Invoke-CrossPlatformFileSelector -Title 'Selecciona el CSV del informe de Subscriptions'
-    if ($null -eq $subscriptionsFile) {
-        Write-Error "No se ha seleccionado el CSV de Subscriptions de PayPro."
+if (-not $SubscriptionsFile) {
+    do {
+        Write-Host "Ahora tienes que seleccionar el CSV de Subscriptions de PayPro (lunes actual hasta lunes de dentro de 2 semanas)" -ForegroundColor Yellow
+        Read-Host "Presiona enter para continuar..."
+        $SubscriptionsFile = Invoke-CrossPlatformFileSelector -Title 'Selecciona el CSV del informe de Subscriptions'
+        if ($null -eq $SubscriptionsFile) {
+            Write-Error "No se ha seleccionado el CSV de Subscriptions de PayPro."
+        }
     }
+    while ($null -eq $SubscriptionsFile)
 }
-while ($null -eq $subscriptionsFile)
 
-$subscriptionsData = Import-Csv -LiteralPath $subscriptionsFile -Delimiter ';'
+$subscriptionsData = Import-Csv -LiteralPath $SubscriptionsFile -Delimiter ';'
 
 [long[]] $subscriptionIds = $subscriptionsData | ForEach-Object { $_.'Subscription ID' }
 $subscriptionIdsStr = "($($subscriptionIds -join ','))"
@@ -97,8 +105,6 @@ order by suh.subscription_id desc;
 
 $dbData = (Get-VolaDbData -Query $sql)
 
-Write-Host $dbData -ForegroundColor Green
-
 $outputData = $dbData | Select-Object @(
     @{ Name = 'ID Club'; Expression = { $_.'ID Club' } }
     @{ Name = 'Nombre club'; Expression = { $_.'Nombre club' } }
@@ -123,8 +129,7 @@ for ($i = 0; $i -lt $outputData.Count; $i++) {
     $outputDataRow.'Renovación suscripción' = $renovacionSuscripcionRow
 }
 
-Export-VolaDataAsCsv -FechaInicio $FechaInicio `
-    -FechaFin $FechaFin `
-    -Paquete 'Lunes' `
+Export-VolaDataAsCsv -Paquete 'Lunes' `
     -NombreDeFicheroBase 'prevision-de-bajas' `
-    -Data $outputData
+    -Data $outputData `
+    -ReturnData:$ReturnData

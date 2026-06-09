@@ -1,5 +1,7 @@
 [CmdletBinding()]
-param ()
+param (
+    [switch] $ReturnData
+)
 
 ### CLUBES CON ALGÚN FREEMIUM ACTIVADO (SEMANAL)
 
@@ -123,4 +125,5 @@ Export-VolaDataAsCsv -FechaInicio $FechaInicio `
     -FechaFin $FechaFin `
     -Paquete 'Lunes' `
     -NombreDeFicheroBase 'clubes-con-fremium-activado' `
-    -Data (Get-VolaDbData -Query $sql)
+    -Data (Get-VolaDbData -Query $sql) `
+    -ReturnData:$ReturnData

@@ -4,7 +4,9 @@ param (
     [string] $FechaInicio,
 
     [Parameter(Mandatory)]
-    [string] $FechaFin
+    [string] $FechaFin,
+
+    [switch] $ReturnData
 )
 
 
@@ -67,4 +69,5 @@ Export-VolaDataAsCsv -FechaInicio $FechaInicio `
     -FechaFin $FechaFin `
     -Paquete 'Lunes' `
     -NombreDeFicheroBase 'alta-de-clubes' `
-    -Data $data
+    -Data $data `
+    -ReturnData:$ReturnData

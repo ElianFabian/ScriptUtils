@@ -4,7 +4,9 @@ param (
     [string] $FechaInicio,
 
     [Parameter(Mandatory)]
-    [string] $FechaFin
+    [string] $FechaFin,
+
+    [switch] $ReturnData
 )
 
 ### CUADROS GENERADOS/PAGADOS SEMANAL
@@ -63,4 +65,5 @@ Export-VolaDataAsCsv -FechaInicio $FechaInicio `
     -FechaFin $FechaFin `
     -Paquete 'Lunes' `
     -NombreDeFicheroBase 'cuadros-generados-semanal' `
-    -Data (Get-VolaDbData -Query $sql)
+    -Data (Get-VolaDbData -Query $sql) `
+    -ReturnData:$ReturnData

@@ -32,6 +32,118 @@ function Get-LatamCountries {
     return 'Chile', 'Uruguay', 'Paraguay', 'Argentina', 'Perú', 'Colombia'
 }
 
+function Get-ExcelSafeWorksheetName {
+    param (
+        [string] $Name
+    )
+
+    $invalidCharsRegex = '[\[\]\*\?/\\:]'
+    $sanitized = ($Name -replace $invalidCharsRegex, '') -replace '\s+', ' '
+    if ($sanitized.Length -gt 31) {
+        $sanitized = $sanitized.Substring(0, 31)
+    }
+
+    return $sanitized.Trim()
+}
+
+function Ensure-ImportExcel {
+    if (-not (Get-Module -ListAvailable -Name ImportExcel)) {
+        throw "El módulo ImportExcel no está instalado. Instálalo con 'Install-Module ImportExcel -Scope CurrentUser' y vuelve a ejecutar."
+    }
+
+    Import-Module ImportExcel -ErrorAction Stop
+}
+
+function Export-VolaWorkbook {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $Path,
+
+        [Parameter(Mandatory = $true)]
+        [hashtable] $SheetData,
+
+        [switch] $AutoSize,
+        [switch] $BoldTopRow
+    )
+
+    Ensure-ImportExcel
+
+    $Path = [System.IO.Path]::GetFullPath($Path)
+    $folder = Split-Path -Path $Path -Parent
+    if ($folder -and -not (Test-Path $folder)) {
+        New-Item -Path $folder -ItemType Directory -Force | Out-Null
+    }
+
+    if (Test-Path $Path) {
+        Remove-Item -Path $Path -Force
+    }
+
+    foreach ($worksheetName in $SheetData.Keys) {
+        $data = $SheetData[$worksheetName]
+        if (-not $data) {
+            $data = @()
+        }
+
+        $safeWorksheetName = Get-ExcelSafeWorksheetName -Name $worksheetName
+
+        $exportParams = @{
+            Path = $Path
+            WorksheetName = $safeWorksheetName
+            TableName = ($safeWorksheetName -replace '\s+', '_')
+            FreezeTopRow = $true
+            Append = (Test-Path $Path)
+        }
+
+        if ($AutoSize.IsPresent) {
+            $exportParams.AutoSize = $true
+        }
+        if ($BoldTopRow.IsPresent) {
+            $exportParams.BoldTopRow = $true
+        }
+
+        if ($data -and $data.Count -gt 0) {
+            $data | Export-Excel @exportParams
+        }
+        else {
+            Export-Excel -Path $Path -WorksheetName $safeWorksheetName -InputObject @() @exportParams
+        }
+    }
+
+    return $Path
+}
+
+function Export-VolaWorkbookLatam {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $Path,
+
+        [Parameter(Mandatory = $true)]
+        [hashtable] $SheetData,
+
+        [switch] $AutoSize,
+        [switch] $BoldTopRow
+    )
+
+    $paisesLatam = Get-LatamCountries
+    $filteredData = [ordered]@{}
+
+    foreach ($worksheetName in $SheetData.Keys) {
+        $data = $SheetData[$worksheetName]
+
+        if ($data | Get-Member -Name 'País' -ErrorAction SilentlyContinue) {
+            $latamData = $data | Where-Object { $_.'País' -in $paisesLatam }
+            $filteredData[$worksheetName] = if ($latamData) { $latamData } else { @() }
+        }
+        else {
+            $filteredData[$worksheetName] = @()
+        }
+    }
+
+    Export-VolaWorkbook -Path $Path -SheetData $filteredData -AutoSize:$AutoSize.IsPresent -BoldTopRow:$BoldTopRow.IsPresent
+}
+
 function Convert-PayProDateFormat {
 
     [OutputType([string])]
@@ -63,7 +175,9 @@ function Export-VolaDataAsCsv {
 
         [string] $NombreDeFicheroBase,
 
-        [PSCustomObject[]] $Data
+        [PSCustomObject[]] $Data,
+
+        [switch] $ReturnData
     )
 
     $dateRegex = '^\d{4}-\d{2}-\d{2}$'
@@ -98,6 +212,10 @@ function Export-VolaDataAsCsv {
 
     $sanitizedData | Export-Csv -Delimiter ';' -Path "$carpeta/$($NombreDeFicheroBase)__$($fechaActual)$rangoDeFecha.csv" -Force -Verbose
     $latamData | Export-Csv -Delimiter ';' -Path "$carpeta/$($NombreDeFicheroBase)__$($fechaActual)$rangoDeFecha-LATAM.csv" -Force -Verbose
+
+    if ($ReturnData.IsPresent) {
+        return $sanitizedData
+    }
 }
 
 
